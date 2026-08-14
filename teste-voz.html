@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teste de voz — calibração contra o Echo</title>
+<style>
+  /* Página avulsa de calibração. Vive fora do app e morre depois do acerto:
+     os três números lidos aqui viram o padrão do ditado. */
+  @font-face {
+    font-family: 'Fraunces';
+    src: url('fontes/Fraunces.woff2') format('woff2-variations');
+    font-weight: 100 900;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Lora';
+    src: url('fontes/Lora.woff2') format('woff2-variations');
+    font-weight: 400 700;
+    font-display: swap;
+  }
+
+  :root {
+    --papel: #f7f1e3;
+    --papel-fundo: #fdf9f0;
+    --verde: #1f4032;
+    --verde-claro: #4a6b5a;
+    --bordo: #7b2e2e;
+    --linha: color-mix(in srgb, var(--verde) 16%, transparent);
+    --linha-forte: color-mix(in srgb, var(--verde) 32%, transparent);
+    --tinta-fraca: color-mix(in srgb, var(--verde) 72%, transparent);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--papel-fundo);
+    color: var(--verde);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 19px;
+    line-height: 1.7;
+    -webkit-tap-highlight-color: transparent;
+  }
+  main { max-width: 42rem; margin: 0 auto; padding: 20px 20px 64px; }
+
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-variation-settings: 'SOFT' 90, 'WONK' 1, 'opsz' 48;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin: 12px 0 4px;
+    font-size: 30px;
+  }
+  .linha-fina { color: var(--tinta-fraca); font-size: 16px; margin: 0 0 24px; }
+
+  .rotulo {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    display: block;
+    margin: 0 0 6px;
+  }
+  .campo { margin: 0 0 20px; }
+
+  textarea, select {
+    width: 100%;
+    font: inherit;
+    font-size: 18px;
+    color: var(--verde);
+    background: var(--papel);
+    border: 1px solid var(--linha-forte);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  textarea { min-height: 170px; line-height: 1.5; resize: vertical; }
+  select { min-height: 48px; }
+  .nota { font-size: 15px; color: var(--tinta-fraca); margin: 6px 0 0; }
+
+  /* aviso de voz: só aparece quando não há voz pt-BR */
+  .aviso {
+    background: color-mix(in srgb, var(--bordo) 8%, var(--papel));
+    border: 1px solid color-mix(in srgb, var(--bordo) 35%, transparent);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 16px;
+    margin: 8px 0 0;
+  }
+  .aviso strong { color: var(--bordo); }
+  [hidden] { display: none !important; }
+
+  /* controles deslizantes com o número grande ao lado */
+  .ajuste { display: grid; grid-template-columns: 1fr 92px; gap: 14px; align-items: center; }
+  .ajuste output {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .ajuste output small {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tinta-fraca);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  input[type='range'] {
+    width: 100%;
+    height: 48px;              /* alvo de toque inteiro */
+    margin: 0;
+    accent-color: var(--verde);
+    background: transparent;
+  }
+
+  .botoes { display: grid; gap: 12px; margin: 28px 0 20px; }
+  button {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    min-height: 56px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+  }
+  .falar { background: var(--verde); color: var(--papel); }
+  .parar { background: var(--bordo); color: var(--papel); }
+  button:disabled { opacity: 0.45; cursor: default; }
+
+  /* palco: o que está saindo pelo alto-falante, e a contagem da pausa */
+  .palco {
+    background: var(--verde);
+    color: var(--papel);
+    border-radius: 10px;
+    padding: 16px 18px;
+    min-height: 120px;
+  }
+  .palco .rotulo { color: color-mix(in srgb, var(--papel) 75%, transparent); margin-bottom: 8px; }
+  .palco p { margin: 0; font-size: 20px; }
+  .palco .contagem {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    margin-top: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* o recibo: os três números para devolver, escritos por extenso */
+  .recibo {
+    margin-top: 24px;
+    border-top: 1px dashed var(--linha-forte);
+    padding-top: 16px;
+    font-size: 17px;
+  }
+  .recibo code {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 16px;
+    background: var(--papel);
+    border: 1px solid var(--linha);
+    border-radius: 6px;
+    padding: 2px 8px;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Teste de voz</h1>
+  <p class="linha-fina">Aponte o celular para o Echo, toque em Falar e ajuste até a Alexa
+    anotar todos os itens de todos os lotes. Depois me devolva os três valores do rodapé.</p>
+
+  <div class="campo">
+    <label class="rotulo" for="texto">O que falar — uma linha por lote</label>
+    <textarea id="texto" spellcheck="false">Alexa, adicionar cebola, alho, tomate, azeite e sal à lista de compras.
+Alexa, adicionar batata, cenoura, salsinha, manteiga e creme de leite à lista de compras.
+Alexa, adicionar arroz arbóreo, vinho branco, queijo parmesão, alho-poró e caldo de legumes à lista de compras.
+Alexa, adicionar dentes de alho, colher de alho, pimenta-do-reino e noz-moscada à lista de compras.</textarea>
+    <p class="nota">Cada linha é falada por inteiro; entre uma e outra entra a pausa escolhida abaixo.</p>
+  </div>
+
+  <div class="campo">
+    <label class="rotulo" for="voz">Voz</label>
+    <select id="voz"></select>
+    <p class="aviso" id="aviso-sem-pt" hidden>
+      <strong>Nenhuma voz em português do Brasil neste aparelho.</strong>
+      No Android: Configurações → Sistema → Idiomas → Saída de conversão de texto em voz →
+      ícone de engrenagem do mecanismo do Google → Instalar dados de voz → português (Brasil).
+      Depois volte aqui e recarregue a página.
+    </p>
+    <p class="aviso" id="aviso-sem-fala" hidden>
+      <strong>Este navegador não sabe falar</strong> (não tem <code>speechSynthesis</code>).
+      Abra esta página no Chrome do celular.
+    </p>
+  </div>
+
+  <div class="campo">
+    <span class="rotulo">Velocidade da fala</span>
+    <div class="ajuste">
+      <!-- 0,9 e 7 s: os números que o Echo aprovou na calibração de 14/08/2026 -->
+      <input id="velocidade" type="range" min="0.7" max="1.2" step="0.05" value="0.9"
+             aria-label="Velocidade da fala, de 0,7 a 1,2">
+      <output id="velocidade-valor" for="velocidade"></output>
+    </div>
+  </div>
+
+  <div class="campo">
+    <span class="rotulo">Pausa entre lotes</span>
+    <div class="ajuste">
+      <input id="pausa" type="range" min="3" max="12" step="1" value="7"
+             aria-label="Pausa entre lotes, de 3 a 12 segundos">
+      <output id="pausa-valor" for="pausa"></output>
+    </div>
+  </div>
+
+  <div class="botoes">
+    <button class="falar" id="falar" type="button">Falar</button>
+    <button class="parar" id="parar" type="button" disabled>Parar</button>
+  </div>
+
+  <div class="palco">
+    <span class="rotulo" id="estado">Pronto</span>
+    <p id="frase-atual">Toque em Falar para começar.</p>
+    <p class="contagem" id="contagem" hidden></p>
+  </div>
+
+  <p class="recibo">Para fixar como padrão, me devolva:
+    voz <code id="recibo-voz">—</code> ·
+    velocidade <code id="recibo-velocidade">—</code> ·
+    pausa <code id="recibo-pausa">—</code>
+  </p>
+</main>
+
+<script>
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  const numeroBr = (n) => n.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+  const suportado = 'speechSynthesis' in window;
+  if (!suportado) {
+    $('aviso-sem-fala').hidden = false;
+    $('falar').disabled = true;
+  }
+
+  // ------------------------------------------------------------------ vozes
+  // getVoices() costuma vir vazio na primeira chamada: escuta voiceschanged e
+  // insiste algumas vezes, porque nem todo Android dispara o evento.
+  const seletorVoz = $('voz');
+  let vozes = [];
+
+  function carregarVozes() {
+    if (!suportado) return;
+    const achadas = speechSynthesis.getVoices();
+    if (!achadas.length) return;
+    vozes = achadas;
+
+    // pt-BR primeiro, depois outros portugueses, depois o resto
+    const peso = (v) => (v.lang === 'pt-BR' ? 0 : v.lang && v.lang.startsWith('pt') ? 1 : 2);
+    const ordenadas = [...vozes].sort((a, b) => peso(a) - peso(b) || a.name.localeCompare(b.name));
+
+    const escolhida = seletorVoz.value;
+    seletorVoz.replaceChildren(
+      ...ordenadas.map((v) => {
+        const opcao = document.createElement('option');
+        opcao.value = v.name;
+        opcao.textContent = `${v.name} — ${v.lang}${v.localService ? '' : ' (rede)'}`;
+        return opcao;
+      })
+    );
+    // mantém a escolha anterior se ela ainda existir; senão, a melhor pt
+    if (escolhida && ordenadas.some((v) => v.name === escolhida)) seletorVoz.value = escolhida;
+
+    $('aviso-sem-pt').hidden = ordenadas.length > 0 && peso(ordenadas[0]) < 2;
+    atualizarRecibo();
+  }
+
+  if (suportado) {
+    speechSynthesis.addEventListener('voiceschanged', carregarVozes);
+    carregarVozes();
+    let tentativas = 0;
+    const insistencia = setInterval(() => {
+      tentativas += 1;
+      if (vozes.length || tentativas > 20) clearInterval(insistencia);
+      else carregarVozes();
+    }, 250);
+  }
+
+  // --------------------------------------------------------------- controles
+  function atualizarRecibo() {
+    const v = Number($('velocidade').value);
+    const p = Number($('pausa').value);
+    $('velocidade-valor').innerHTML = `${numeroBr(v)}<small>× normal</small>`;
+    $('pausa-valor').innerHTML = `${p}<small>segundos</small>`;
+    $('recibo-voz').textContent = seletorVoz.value || '—';
+    $('recibo-velocidade').textContent = numeroBr(v);
+    $('recibo-pausa').textContent = `${p} s`;
+  }
+  $('velocidade').addEventListener('input', atualizarRecibo);
+  $('pausa').addEventListener('input', atualizarRecibo);
+  seletorVoz.addEventListener('change', atualizarRecibo);
+  atualizarRecibo();
+
+  // ------------------------------------------------------------------ a fala
+  let falando = false;
+  let temporizador = null;
+  let relogio = null;
+
+  function pintarParado(texto) {
+    falando = false;
+    clearTimeout(temporizador);
+    clearInterval(relogio);
+    temporizador = relogio = null;
+    $('falar').disabled = !suportado;
+    $('parar').disabled = true;
+    $('estado').textContent = 'Pronto';
+    $('frase-atual').textContent = texto || 'Toque em Falar para começar.';
+    $('contagem').hidden = true;
+  }
+
+  function falarLinha(linhas, i) {
+    if (!falando) return;
+    if (i >= linhas.length) {
+      pintarParado('Fim. A Alexa pegou tudo?');
+      return;
+    }
+
+    $('estado').textContent = `Falando — lote ${i + 1} de ${linhas.length}`;
+    $('frase-atual').textContent = linhas[i];
+    $('contagem').hidden = true;
+
+    const fala = new SpeechSynthesisUtterance(linhas[i]);
+    fala.lang = 'pt-BR';
+    const voz = vozes.find((v) => v.name === seletorVoz.value);
+    if (voz) fala.voice = voz;
+    fala.rate = Number($('velocidade').value);
+
+    const seguir = () => {
+      if (!falando) return;
+      if (i + 1 >= linhas.length) {
+        pintarParado('Fim. A Alexa pegou tudo?');
+        return;
+      }
+      // a pausa conta a partir do fim da fala, nunca do começo
+      const pausa = Number($('pausa').value);
+      let restam = pausa;
+      $('estado').textContent = `Pausa — lote ${i + 2} de ${linhas.length} a caminho`;
+      $('contagem').hidden = false;
+      $('contagem').textContent = `${restam} s`;
+      relogio = setInterval(() => {
+        restam -= 1;
+        $('contagem').textContent = `${Math.max(restam, 0)} s`;
+      }, 1000);
+      temporizador = setTimeout(() => {
+        clearInterval(relogio);
+        falarLinha(linhas, i + 1);
+      }, pausa * 1000);
+    };
+    fala.onend = seguir;
+    fala.onerror = (e) => {
+      if (e.error === 'canceled' || e.error === 'interrupted') return;
+      seguir();
+    };
+    speechSynthesis.speak(fala);
+  }
+
+  $('falar').addEventListener('click', () => {
+    const linhas = $('texto').value.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (!linhas.length || falando) return;
+    speechSynthesis.cancel();
+    falando = true;
+    $('falar').disabled = true;
+    $('parar').disabled = false;
+    falarLinha(linhas, 0);
+  });
+
+  $('parar').addEventListener('click', () => {
+    speechSynthesis.cancel(); // corta no meio da palavra, imediatamente
+    pintarParado('Parado.');
+  });
+
+  // fechar ou esconder a página cala o aparelho na hora
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && falando) {
+      speechSynthesis.cancel();
+      pintarParado('Parado ao sair da tela.');
+    }
+  });
+  window.addEventListener('pagehide', () => speechSynthesis.cancel());
+</script>
+</body>
+</html>

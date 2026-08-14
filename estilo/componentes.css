@@ -1,0 +1,149 @@
+/* Vocabulário compartilhado entre as telas.
+   Só o que precisa ser igual em todo lugar. Cada tela tem sua própria folha. */
+
+/* ---------------------------------------------------------------- rótulo
+   Sans em caixa alta, pequeno e espacejado: navegação, metadado, título de seção.
+   É o contraponto às duas serifas — nunca use serifa para rótulo. */
+.rotulo {
+  font-family: var(--interface);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--tinta-fraca);
+}
+
+/* ---------------------------------------------------------------- emoji
+   A especificação exige emoji antes do ingrediente; o painel de identidade pede
+   nada de ícone genérico. O acordo é este: o emoji do sistema entra dessaturado,
+   virando marca pequena impressa no papel em vez de adesivo colorido. Continua
+   reconhecível — alho, azeitona, queijo, sal — mas para de brigar com o bordô,
+   que é o acento raro da paleta. Toda peça que mostrar emoji usa esta classe. */
+.emoji {
+  filter: saturate(0.32);
+  font-style: normal;
+  /* a fonte de emoji do sistema não é a nossa; travar aqui evita variação entre telas */
+  font-family: 'Segoe UI Emoji', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif;
+  line-height: 1;
+}
+
+/* ---------------------------------------------------------------- ornamento
+   Separação por fio, nunca por sombra. */
+.fio-pontilhado {
+  border: 0;
+  border-top: 2px dotted var(--linha-forte);
+  margin: var(--e5) 0;
+}
+
+.filete-duplo {
+  border: 0;
+  height: 4px;
+  border-top: 1px solid var(--linha-forte);
+  border-bottom: 1px solid var(--linha-forte);
+  margin: var(--e5) 0;
+}
+
+/* losango centrado entre dois fios — divisor de seção */
+.losango {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  margin: var(--e6) 0;
+  color: var(--linha-forte);
+}
+.losango::before,
+.losango::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+}
+.losango::marker {
+  content: '';
+}
+.losango span {
+  width: 7px;
+  height: 7px;
+  background: var(--verde);
+  transform: rotate(45deg);
+  opacity: 0.55;
+}
+
+/* ---------------------------------------------------------------- botões
+   Cor entra como bloco inteiro. Altura mínima de 48px vem do base.css. */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e2);
+  min-height: var(--alvo-toque);
+  padding: var(--e3) var(--e5);
+  border-radius: var(--raio);
+  background: var(--verde);
+  color: var(--papel);
+  font-family: var(--interface);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-align: center;
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+.botao:active {
+  transform: scale(0.98);
+  background: var(--verde-claro);
+}
+
+.botao-vazado {
+  background: transparent;
+  color: var(--verde);
+  border: 1.5px solid var(--linha-forte);
+}
+.botao-vazado:active {
+  background: var(--toque);
+  transform: scale(0.98);
+}
+
+/* o acento raro — no máximo um por tela */
+.botao-bordo {
+  background: var(--bordo);
+  color: var(--papel);
+}
+.botao-bordo:active {
+  background: var(--bordo-claro);
+}
+
+/* ---------------------------------------------------------------- faixa
+   Bloco de cor de ponta a ponta. Sangra além do envelope de propósito. */
+.faixa {
+  background: var(--verde);
+  color: var(--papel);
+  padding: var(--e4) var(--margem);
+}
+.faixa-bordo {
+  background: var(--bordo);
+  color: var(--papel);
+}
+
+/* ---------------------------------------------------------------- cartão
+   Papel sobre papel, separado por fio — nunca por sombra. */
+.cartao {
+  background: var(--papel);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: var(--e4);
+}
+
+/* ---------------------------------------------------------------- vazio */
+.vazio {
+  padding: var(--e8) var(--margem);
+  text-align: center;
+  color: var(--tinta-fraca);
+}
+.vazio-titulo {
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-size: 24px;
+  color: var(--verde);
+  margin-bottom: var(--e2);
+}

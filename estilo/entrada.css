@@ -1,0 +1,237 @@
+/* Tela de entrada — a capa.
+   Pouco conteúdo, então tudo aqui é identidade: selo a traço, Fraunces grande,
+   cartão de papel com fio pontilhado. Sem sombra, sem gradiente, sem ícone genérico.
+
+   O terço de cima é bloco verde chapado, de ponta a ponta — o mesmo topo do
+   índice e da lista de compras. Abaixo dele o papel, e nele o formulário
+   alinhado à esquerda, porque texto corrido centralizado faz o olho recaçar o
+   começo de cada linha.
+
+   Escala tipográfica da casa: 46 nome · 24 título de estado vazio · 19 corpo ·
+   17 prosa de apoio · 13 navegação, ação e rótulo · 11 contagem. */
+
+.entrada {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.entrada-conteudo {
+  width: 100%;
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+}
+
+/* -------------------------------------------------------------- bloco verde */
+.entrada-capa {
+  background: var(--verde);
+  color: var(--papel);
+  padding: var(--e6) var(--margem) var(--e5);
+  text-align: center;
+}
+
+/* o resto respira e empurra o rodapé para baixo */
+.entrada-corpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--e6) var(--margem) var(--e7);
+}
+
+/* ---------------------------------------------------------------- selo
+   Brasão desenhado: raios, cartucho de contorno duplo, fio de pontinhos,
+   coroa e o monograma da casa. Tudo em traço, nada preenchido de cor chapada. */
+.entrada-selo {
+  display: block;
+  width: 132px;
+  height: 132px;
+  margin: 0 auto var(--e4);
+  color: var(--papel);
+}
+
+.entrada-raio {
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0.4;
+}
+
+.entrada-cartucho,
+.entrada-cartucho-interno {
+  fill: none;
+  stroke: currentColor;
+}
+.entrada-cartucho {
+  stroke-width: 2.6;
+}
+.entrada-cartucho-interno {
+  stroke-width: 1;
+}
+
+.entrada-pontinhos {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-dasharray: 0 6;
+  opacity: 0.7;
+}
+
+.entrada-coroa {
+  fill: currentColor;
+}
+
+.entrada-floreio line {
+  stroke: currentColor;
+  stroke-width: 1.2;
+}
+.entrada-floreio-losango {
+  fill: currentColor;
+}
+
+.entrada-monograma {
+  fill: currentColor;
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-weight: 600;
+  font-size: 54px;
+  letter-spacing: 0;
+}
+
+/* ---------------------------------------------------------------- nome da casa */
+.entrada-nome {
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+.entrada-nome span {
+  display: block;
+}
+
+/* o ornamento vive sobre o verde: o fio e o losango viram papel */
+.entrada-divisor {
+  margin: var(--e4) auto var(--e4);
+  max-width: 15rem;
+  color: color-mix(in srgb, var(--papel) 45%, transparent);
+}
+.entrada-divisor span {
+  background: var(--papel);
+  opacity: 0.8;
+}
+
+.entrada-placa {
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: var(--papel);
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------- cartão de papel
+   Borda por fio pontilhado, como o cartão da Rummo: separação sem sombra. */
+.entrada-cartao {
+  padding: var(--e5) var(--e4);
+  background: var(--papel);
+  border: 2px dotted var(--linha-forte);
+  border-radius: var(--raio);
+  text-align: left;
+}
+
+.entrada-etiqueta {
+  display: block;
+  margin-bottom: var(--e2);
+  font-size: 13px;
+  color: var(--verde-claro);
+}
+
+.entrada-campo {
+  position: relative;
+}
+
+/* 48px de alvo e 19px de corpo — a mesma altura do campo de busca do índice e
+   da tela de escolher receitas. O iOS não dá zoom em 19px. */
+.entrada-senha {
+  width: 100%;
+  min-height: var(--alvo-toque);
+  padding: var(--e3) 96px var(--e3) var(--e4);
+  font-family: var(--corpo);
+  font-size: 19px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: var(--verde);
+  background: var(--papel-fundo);
+  border: 1.5px solid var(--linha-forte);
+  border-radius: var(--raio);
+  -webkit-appearance: none;
+  appearance: none;
+}
+/* o anel de foco é o da casa, definido uma vez em base.css */
+.entrada-senha:focus {
+  border-color: var(--verde);
+}
+
+/* mostrar/esconder: 48px de alvo, encostado no fio que divide o campo */
+.entrada-olho {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--alvo-toque);
+  min-width: 88px;
+  padding: 0 var(--e2);
+  border-left: 1px solid var(--linha);
+  border-radius: 0 var(--raio) var(--raio) 0;
+  font-family: var(--interface);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--verde-claro);
+}
+.entrada-olho:active {
+  background: var(--toque);
+}
+
+/* o único bordô da tela: o recado de erro, em bloco */
+.entrada-recado {
+  margin-top: var(--e4);
+  padding: var(--e3) var(--e4);
+  background: var(--bordo);
+  color: var(--papel);
+  border-radius: var(--raio);
+  font-size: 17px;
+  line-height: 1.5;
+}
+.entrada-recado[hidden] {
+  display: none;
+}
+
+/* o botão da casa: 13px em caixa alta espacejada, largura inteira — o mesmo
+   desenho de "LISTA DE COMPRAS" no índice e de "ESCOLHER RECEITAS" na lista */
+.entrada-entrar {
+  display: flex;
+  width: 100%;
+  margin-top: var(--e4);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.entrada-entrar:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.entrada-rodape {
+  margin: var(--e5) 0 0;
+  font-size: 17px;
+  line-height: 1.55;
+  font-style: italic;
+  color: var(--tinta-fraca);
+}

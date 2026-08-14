@@ -1,0 +1,221 @@
+/* Passos do preparo.
+
+   Sem numeração — regra da especificação. No lugar do número, cada passo tem
+   uma ÂNCORA NOMEADA: o verbo que ele manda fazer, em caixa alta espacejada da
+   fonte de interface ("DOURAR O BACON", "JUNTAR A CEBOLA"). Diferente em cada
+   passo, curta o bastante para caber numa linha e para ser guardada de cabeça,
+   e grande o bastante para o olho voltar da panela e pousar nela de um braço de
+   distância. Quando a frase não rende rótulo, o passo fica sem ele e o resto do
+   desenho continua de pé.
+
+   Ritmo: dentro do passo, entrelinha de 1,7. Entre um passo e o seguinte, um
+   respiro de cerca de 67px de tinta a tinta — duas linhas em branco, que é a
+   medida da referência. É esse degrau que deixa reencontrar o começo do passo.
+
+   Sarjeta de 22px à esquerda, com três estados na mesma casa:
+     a fazer  → losango vazado
+     agora    → filete verde de corpo inteiro, com campo de papel atrás do texto
+     feito    → losango cheio e texto apagado
+
+   O filete de "agora" era bordô. Numa receita com nota ele aparecia junto com a
+   faixa bordô do cabeçalho, e o orçamento da casa é de um bordô por tela: o
+   bordô ficou com a faixa, que é bloco de cor de ponta a ponta, e o filete —
+   que é fio, não bloco — passou ao verde.
+
+   Escala tipográfica da casa: 27 título de seção · 19 corpo · 17 prosa de apoio
+   · 16 âncora do passo · 13 ação e rótulo de progresso.
+
+   Nada de sombra, nada de gradiente, nenhum hexadecimal novo. */
+
+.passos {
+  /* a casa da marca, à esquerda do texto */
+  --sarjeta: 22px;
+  /* texto do passo já cumprido: apagado, mas ainda legível na bancada */
+  --passo-apagado: color-mix(in srgb, var(--verde) 72%, transparent);
+  padding-bottom: var(--e7);
+}
+
+.passos-divisor {
+  margin-block: var(--e6);
+}
+
+.passos-titulo {
+  font-size: 27px;
+  margin-bottom: var(--e3);
+}
+
+/* quanto falta, em palavra: leitura de progresso sem contar losango e sem
+   numerar passo nenhum */
+.passos-falta {
+  font-family: var(--interface);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--verde);
+  margin-bottom: var(--e2);
+}
+
+/* microcópia de descoberta: fica sempre, para a lista nunca dar salto embaixo
+   do dedo no momento em que a pessoa marca o primeiro passo. No corpo e no
+   verde do corpo — a bancada fica longe demais para cinza pequeno. */
+.passos-dica {
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--verde);
+  margin-bottom: var(--e6);
+}
+
+.passos-sem {
+  font-size: 17px;
+  color: var(--tinta-fraca);
+  margin-top: var(--e4);
+}
+
+/* ------------------------------------------------------------------ o passo */
+
+/* o degrau de respiro: duas linhas em branco de tinta a tinta, a medida da
+   referência — mais do que o dobro da entrelinha de dentro do passo */
+.passo {
+  position: relative;
+}
+.passo + .passo {
+  margin-top: var(--e7);
+}
+
+/* o alvo de toque é o passo inteiro — nada de caixinha ao lado da prosa */
+.passo-toque {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: var(--alvo-toque);
+  margin: 0;
+  padding: var(--e4) var(--e2) var(--e4) var(--sarjeta);
+  border-radius: var(--raio);
+  background: transparent;
+  text-align: left;
+  font-family: var(--corpo);
+  font-size: var(--tamanho-corpo);
+  line-height: var(--entrelinha-corpo);
+  font-weight: 400;
+  color: var(--verde);
+  /* mão suja na bancada: um toque não deve selecionar texto */
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background-color 0.14s ease, color 0.14s ease;
+}
+
+/* ----------------------------------------------------------------- a âncora */
+
+.passo-rotulo {
+  display: block;
+  font-family: var(--interface);
+  /* menor que o corpo em pontos, maior que ele em tinta: caixa alta e negrito
+     dão à âncora a mancha que o olho acha de longe */
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--e1);
+  /* o rótulo é uma linha só; se não couber, quebra sem cortar palavra */
+  text-wrap: balance;
+}
+
+.passo-texto {
+  display: block;
+  /* prosa de cozinha: nada de hifenizar, a palavra inteira lê mais rápido */
+  hyphens: manual;
+}
+
+/* ---------------------------------------------------------------- a marca */
+
+.passo-marca {
+  position: absolute;
+  left: 1px;
+  /* centro do losango na altura do rótulo */
+  top: calc(var(--e4) + var(--e1));
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--linha-forte);
+  background: transparent;
+  transform: rotate(45deg);
+  transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+/* passo sem rótulo: o losango desce para a altura da primeira linha do texto */
+.passo-sem-rotulo .passo-marca {
+  top: calc(var(--e4) + 11px);
+}
+
+/* ------------------------------------------------------------------ feito */
+
+.passo-feito .passo-toque {
+  color: var(--passo-apagado);
+}
+.passo-feito .passo-marca {
+  background: var(--verde);
+  border-color: var(--verde);
+}
+
+/* trilho pontilhado na sarjeta: emenda um passo feito no outro e desenha, do
+   alto até o filete bordô, exatamente o trecho que já ficou para trás.
+   Marca o estado sem tirar contraste do texto. */
+.passo-feito::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: calc(var(--e7) / -2);
+  bottom: calc(var(--e7) / -2);
+  border-left: 2px dotted var(--linha-forte);
+}
+.passo-feito:first-child::before {
+  top: var(--e2);
+}
+.passo-feito:last-child::before {
+  bottom: var(--e2);
+}
+
+/* ------------------------------------------------------------------ agora
+   onde eu parei: campo de papel atrás do texto e filete verde de corpo inteiro
+   na sarjeta. O bordô da tela de receita é da faixa de recado do cabeçalho. */
+
+.passo-agora .passo-toque {
+  background: var(--papel);
+}
+.passo-agora .passo-marca {
+  left: 4px;
+  top: var(--e3);
+  bottom: var(--e3);
+  width: 4px;
+  height: auto;
+  border: 0;
+  border-radius: 2px;
+  background: var(--verde);
+  transform: none;
+}
+
+/* ------------------------------------------------------------------ toque */
+
+.passo .passo-toque:active {
+  background: var(--toque);
+}
+
+/* ----------------------------------------------------------------- rodapé */
+
+.passos-rodape {
+  display: flex;
+  margin-top: var(--e6);
+}
+.passos-rodape[hidden] {
+  display: none;
+}
+
+/* o botão da casa: 13px em caixa alta espacejada, como no índice e na lista */
+.passos-recomecar {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding-inline: var(--e5);
+}

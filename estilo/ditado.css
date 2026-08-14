@@ -1,0 +1,356 @@
+/* Controles do ditado para a Alexa.
+   Leitura a um braço de distância, toque com polegar sujo.
+   Bloco de cor, fio pontilhado, nenhuma sombra, nenhum gradiente.
+
+   Esta peça mora dentro da tela da lista de compras e fala a língua dela:
+   escala tipográfica da casa (34/27/24/20/19/18/17/16/13/11), prosa alinhada à
+   esquerda, verde em faixa que sangra de ponta a ponta e um bordô só.
+   O envelope de largura e a margem lateral vêm de quem hospeda — esta folha
+   não os repete. */
+
+.ditado {
+  padding-block: var(--e6) var(--e7);
+}
+
+/* ------------------------------------------------------------- cabeçalho */
+.ditado-cabeca {
+  margin-bottom: var(--e4);
+}
+/* título de seção, a mesma medida de "Ingredientes" e "Modo de preparo" */
+.ditado-titulo {
+  font-size: 27px;
+}
+.ditado-linha-fina {
+  margin-top: var(--e2);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}
+
+/* ------------------------------------------------------------------ palco
+   O bloco verde que responde de longe: em que estado está, qual lote,
+   e a frase exata que o alto-falante está dizendo agora.
+
+   Sangra de ponta a ponta, de canto vivo — o mesmo desenho da capa do índice,
+   do topo da receita e da faixa da lista. Cartão de canto redondo boiando no
+   papel era o único verde do app com cara de componente de aplicativo, e era
+   por isso que ele e a faixa verde da tela pareciam dois blocos competindo em
+   vez de dois momentos do mesmo material. */
+.ditado-palco {
+  position: relative;
+  margin-inline: calc(var(--margem) * -1);
+  background: var(--verde);
+  color: var(--papel);
+  padding: var(--e4) var(--margem) var(--e5);
+}
+
+.ditado-palco-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e3);
+}
+.ditado-estado {
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--papel);
+}
+.ditado-conta {
+  font-size: 13px;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--papel) 72%, transparent);
+}
+
+/* fileira de lotes: passados cheios, o de agora mais alto, os que faltam vazios */
+.ditado-barra {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 14px;
+  margin: var(--e3) 0 var(--e4);
+}
+.ditado-tira {
+  flex: 1;
+  height: 5px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--papel) 24%, transparent);
+}
+.ditado-tira-feita {
+  background: color-mix(in srgb, var(--papel) 55%, transparent);
+}
+.ditado-tira-atual {
+  height: 14px;
+  background: var(--papel);
+}
+.ditado-palco-falando .ditado-tira-atual {
+  animation: ditado-pulso 1.2s ease-in-out infinite;
+}
+@keyframes ditado-pulso {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* A caixa da frase é medida pela maior frase do ditado inteiro e fica travada
+   nessa altura: a frase muda a cada lote, os botões não andam de lugar. */
+.ditado-frase {
+  font-family: var(--corpo);
+  font-size: 24px;
+  line-height: 1.45;
+  min-height: var(--altura-frase, calc(24px * 1.45 * 3));
+  color: var(--papel);
+  text-wrap: pretty;
+}
+.ditado-frase-fraca {
+  color: color-mix(in srgb, var(--papel) 60%, transparent);
+}
+
+/* a régua que mede — mesma largura, mesma tipografia, invisível */
+.ditado-regua {
+  position: absolute;
+  top: 0;
+  left: var(--margem);
+  right: var(--margem);
+  min-height: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.ditado-nota {
+  margin-top: var(--e3);
+  min-height: 22px;
+  font-family: var(--interface);
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--papel) 74%, transparent);
+}
+
+/* --------------------------------------------------------------- comandos
+   Duas formas fixas: parado mostra um botão só; falando mostra sempre
+   os mesmos quatro alvos, nas mesmas posições. */
+.ditado-comandos {
+  display: grid;
+  gap: var(--e2);
+  margin-top: var(--e4);
+}
+
+.ditado-grande {
+  width: 100%;
+  min-height: 76px;
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* o maior alvo da tela, sozinho na linha, e o único bordô da peça */
+.ditado-parar {
+  min-height: 88px;
+  font-size: 27px;
+  letter-spacing: 0.18em;
+}
+
+/* Rótulo de botão é caixa alta espacejada em todo o app — no índice, na receita
+   e na lista de compras. Aqui os tamanhos são maiores porque o alvo é o polegar
+   sujo a um braço de distância, mas a voz é a mesma; metade dos botões desta peça
+   estava em caixa de frase e a outra metade em caixa alta. */
+.ditado-medio {
+  width: 100%;
+  min-height: 64px;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ditado-trio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--e2);
+}
+.ditado-pequeno {
+  min-height: 56px;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding-inline: var(--e2);
+}
+
+.ditado button:disabled {
+  opacity: 0.34;
+}
+
+/* alinhada à esquerda como toda a prosa do app: centralizada, o olho tinha de
+   recaçar o começo da segunda linha */
+.ditado-dica {
+  margin-top: var(--e3);
+  font-family: var(--interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}
+
+/* ---------------------------------------------------------------- ajustes
+   Blocos de 68px dos dois lados e o número grande no meio.
+   Nada de trilho fino: o polegar não tem pontaria. */
+.ditado-fio {
+  margin: var(--e5) 0;
+}
+
+.ditado-ajustes {
+  display: grid;
+  gap: var(--e5);
+}
+.ditado-ajuste-cabeca {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e2);
+}
+.ditado-ajuste-cabeca .rotulo {
+  font-size: 13px;
+}
+.ditado-limites {
+  font-size: 11px;
+}
+
+.ditado-passo {
+  display: grid;
+  grid-template-columns: 68px 1fr 68px;
+  gap: var(--e2);
+  margin-top: var(--e2);
+}
+/* o mesmo sinal de mais/menos do controle de porções da receita e da lista */
+.ditado-passo-botao {
+  min-height: 60px;
+  padding: 0;
+  font-size: 27px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.ditado-valor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: var(--papel);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: var(--e2) var(--e1);
+}
+.ditado-numero {
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-size: 27px;
+  line-height: 1;
+}
+.ditado-unidade {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+.ditado-ajuste-travado .ditado-valor {
+  opacity: 0.5;
+}
+
+.ditado-aviso-ajuste {
+  margin-top: var(--e3);
+  font-family: var(--interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}
+
+/* ------------------------------------------------------------ seletor de voz
+   O mesmo material dos ajustes: rótulo pequeno em cima, alvo alto embaixo.
+   O select é o nativo — a rodinha de opções do sistema é o que o polegar já
+   conhece —, vestido de papel, fio e canto da casa. */
+.ditado-seletor-voz {
+  width: 100%;
+  min-height: 60px;
+  margin-top: var(--e2);
+  padding: var(--e2) var(--e3);
+  font-family: var(--interface);
+  font-size: 17px;
+  color: var(--verde);
+  background: var(--papel);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+}
+.ditado-seletor-voz:disabled {
+  opacity: 0.5;
+}
+
+/* ------------------------------------------------- aparelho que não fala
+   A faixa de recado sangra como o palco: é o mesmo material, e neste estado ela
+   é o único bordô da tela — o PARAR nem chega a existir. */
+.ditado-faixa {
+  margin-inline: calc(var(--margem) * -1);
+  padding: var(--e4) var(--margem);
+}
+.ditado-faixa-rotulo {
+  color: color-mix(in srgb, var(--papel) 78%, transparent);
+  font-size: 13px;
+}
+.ditado-faixa-texto {
+  margin-top: var(--e2);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.ditado-nota-solta {
+  margin-top: var(--e4);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--tinta-fraca);
+}
+
+.ditado-frases {
+  display: grid;
+  gap: var(--e3);
+  margin-top: var(--e4);
+}
+.ditado-frase-muda {
+  background: var(--papel);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: var(--e3) var(--e4);
+}
+.ditado-frase-numero {
+  display: block;
+  margin-bottom: var(--e1);
+  font-size: 11px;
+}
+.ditado-frase-texto {
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------ nada a ditar
+   Alinhado à esquerda, como o estado vazio da lista e o da busca do índice. */
+.ditado-recado {
+  background: var(--papel);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: var(--e5) var(--e4);
+}
+.ditado-recado-titulo {
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-size: 24px;
+}
+.ditado-recado-texto {
+  margin-top: var(--e2);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--tinta-fraca);
+}
+
+/* esconder de verdade, mesmo com display de botão */
+.ditado [hidden] {
+  display: none;
+}

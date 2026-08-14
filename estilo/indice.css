@@ -1,0 +1,356 @@
+/* Índice A–Z — a tela inicial.
+   Coluna única, ritmo constante: emoji sempre na mesma coluna, nome grande, metadado
+   miúdo. O que separa os itens é o espaço; o que separa as letras é o fio pontilhado.
+
+   Escala tipográfica da casa (a mesma nas cinco peças):
+     34 título de tela · 27 título de seção · 24 título de estado vazio
+     20 nome de receita/ingrediente · 19 corpo · 17 prosa de apoio
+     16 âncora e título de grupo · 13 navegação, ação e rótulo · 11 contagem e legenda
+
+   Toda tela abre com o mesmo topo: faixa verde chapada de ponta a ponta, rótulo em
+   sans miúdo, nome em Fraunces no papel, e uma linha de contexto. É o mesmo topo da
+   lista de compras e da capa de entrada. */
+
+.indice {
+  --indice-busca-altura: 73px; /* 48 do campo + 12 de folga em cima e embaixo + fio */
+  width: 100%;
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  /* espaço para o rodapé fixo não cobrir a última receita */
+  padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px) + var(--e6));
+}
+
+/* ------------------------------------------------------------------- capa
+   Bloco verde chapado de ponta a ponta — o mesmo topo da lista de compras e da
+   capa de entrada. Cor em bloco, como manda o painel, e nunca duas vezes na
+   mesma rolagem: o rodapé fixo é de papel. */
+.indice-capa {
+  background: var(--verde);
+  color: var(--papel);
+  padding: var(--e5) var(--margem);
+}
+.indice-capa .rotulo {
+  font-size: 13px;
+  color: var(--papel);
+  opacity: 0.75;
+}
+.indice-titulo {
+  font-size: 34px;
+  margin: var(--e2) 0 var(--e3);
+  color: var(--papel);
+}
+.indice-capa-sub {
+  font-family: var(--corpo);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--papel);
+  opacity: 0.86;
+}
+
+/* ------------------------------------------------------------------ busca
+   Fica grudada no topo: dá para procurar sem voltar a rolagem toda. */
+.indice-busca {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--papel-fundo);
+  padding: var(--e3) var(--margem);
+  border-bottom: 1px solid var(--linha);
+}
+.indice-busca-campo {
+  position: relative;
+}
+.indice-campo {
+  width: 100%;
+  height: var(--alvo-toque);
+  padding: 0 var(--alvo-toque) 0 var(--e4);
+  background: var(--papel);
+  border: 1.5px solid var(--linha-forte);
+  border-radius: var(--raio);
+  font-family: var(--corpo);
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--verde);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.indice-campo::placeholder {
+  color: var(--tinta-fraca);
+}
+.indice-campo::-webkit-search-cancel-button,
+.indice-campo::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.indice-busca-limpar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  min-height: var(--alvo-toque);
+  font-family: var(--corpo);
+  font-size: 27px;
+  line-height: 1;
+  color: var(--tinta-fraca);
+  border-radius: var(--raio);
+}
+.indice-busca-limpar:active {
+  background: var(--toque);
+}
+
+/* -------------------------------------------------------- cabeçalho de letra
+   Também gruda, logo abaixo da busca: dá para saber em que letra se está. */
+.indice-grupo {
+  scroll-margin-top: var(--indice-busca-altura);
+}
+.indice-letra {
+  position: sticky;
+  top: var(--indice-busca-altura);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  background: var(--papel-fundo);
+  padding: var(--e5) var(--margem) var(--e2);
+  font-size: 13px; /* o glifo tem tamanho próprio; isso é só a linha */
+}
+.indice-letra-glifo {
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-size: 27px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.indice-letra-fio {
+  flex: 1;
+  height: 0;
+  border-top: 2px dotted var(--linha-forte);
+}
+.indice-letra-conta {
+  font-size: 11px;
+}
+
+/* ------------------------------------------------------------------- item */
+.indice-item {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: var(--e3);
+  align-items: baseline;
+  min-height: var(--alvo-toque);
+  padding: var(--e3) var(--margem);
+}
+.indice-item:active {
+  background: var(--toque);
+}
+/* o emoji é ornamento tipográfico, um ponto abaixo do nome — a mesma medida da
+   lista de ingredientes, para o mesmo enfeite não ter dois tamanhos no app */
+.indice-item-emoji {
+  font-size: 18px;
+  line-height: 1.35;
+  text-align: center;
+}
+.indice-item-texto {
+  display: block;
+  min-width: 0;
+}
+.indice-item-nome {
+  display: block;
+  font-family: var(--corpo);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+}
+.indice-item-meta {
+  display: block;
+  margin-top: var(--e1);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+/* ------------------------------------------------------- resultado da busca */
+.indice-resumo {
+  padding: var(--e5) var(--margem) var(--e2);
+  font-size: 11px;
+}
+.indice-grupo-busca {
+  border-top: 2px dotted var(--linha-forte);
+  margin: 0 var(--margem);
+  padding-top: var(--e2);
+}
+.indice-grupo-busca .indice-item {
+  margin-inline: calc(var(--margem) * -1);
+}
+
+/* ---------------------------------------------------------- busca sem achado
+   Alinhado à esquerda, como o estado vazio da lista de compras: parágrafo de
+   três linhas centralizado obriga o olho a recaçar o começo de cada linha. */
+.indice-vazio {
+  padding: var(--e7) var(--margem) var(--e6);
+  text-align: left;
+}
+.indice-vazio .vazio-titulo {
+  font-size: 24px;
+  line-height: 1.15;
+}
+.indice-vazio-texto {
+  font-family: var(--corpo);
+  font-size: 17px;
+  line-height: 1.55;
+  margin: var(--e2) 0 var(--e5);
+}
+.indice-vazio-botao {
+  display: flex;
+  width: 100%;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* -------------------------------------------------------------- rodapé fixo
+   Gaveta de letras empilhada sobre a barra: as duas moram no alcance do polegar. */
+.indice-rodape {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+}
+
+.indice-barra {
+  background: var(--papel);
+  border-top: 3px double var(--linha-forte);
+  padding: var(--e3) var(--margem);
+  padding-bottom: calc(var(--e3) + env(safe-area-inset-bottom, 0px));
+}
+.indice-barra-interna {
+  display: flex;
+  gap: var(--e2);
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+}
+.indice-barra .botao {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding-inline: var(--e3);
+}
+.indice-barra .indice-barra-letras {
+  flex: 0 0 108px;
+  letter-spacing: 0.18em;
+}
+.indice-barra-lista {
+  flex: 1;
+}
+
+/* ------------------------------------------------------------ gaveta de letras */
+.indice-veu {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  background: color-mix(in srgb, var(--verde) 55%, transparent);
+}
+
+.indice-gaveta {
+  background: var(--papel);
+  border-top: 3px double var(--linha-forte);
+  padding: var(--e3) var(--margem) var(--e4);
+  animation: indice-subir 0.16s ease-out;
+}
+@keyframes indice-subir {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
+.indice-gaveta-topo {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  max-width: var(--largura-conteudo);
+  margin: 0 auto var(--e3);
+}
+.indice-gaveta-topo .rotulo {
+  flex: 1;
+  font-size: 13px;
+}
+.indice-gaveta-acao {
+  min-height: var(--alvo-toque);
+  padding-inline: var(--e3);
+  font-family: var(--interface);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--verde);
+  border-radius: var(--raio);
+}
+.indice-gaveta-acao:active {
+  background: var(--toque);
+}
+.indice-gaveta-grade {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--e2);
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+}
+.indice-gaveta-letra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-height: 56px;
+  background: var(--papel-fundo);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+}
+.indice-gaveta-glifo {
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-size: 20px;
+  line-height: 1;
+}
+.indice-gaveta-conta {
+  font-family: var(--interface);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--tinta-fraca);
+}
+.indice-gaveta-letra:active,
+.indice-gaveta-letra[aria-current='true'] {
+  background: var(--verde);
+  border-color: var(--verde);
+  color: var(--papel);
+}
+.indice-gaveta-letra:active .indice-gaveta-conta,
+.indice-gaveta-letra[aria-current='true'] .indice-gaveta-conta {
+  color: var(--papel);
+  opacity: 0.7;
+}
+
+/* ------------------------------------------------- fechar o caderno (sair)
+   Fica no fim da rolagem, longe do polegar que navega: sair apaga a senha e não
+   é navegação. O espaço embaixo é a folga da barra fixa do rodapé. */
+.indice-fecho {
+  padding: var(--e6) var(--margem) calc(var(--e8) + var(--e7));
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+}
+.indice-fecho-nota {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--tinta-fraca);
+  margin-bottom: var(--e4);
+  text-wrap: pretty;
+}
+.indice-fecho-botao {
+  width: 100%;
+}
+.indice-fecho-confirmando {
+  border-color: var(--bordo);
+  color: var(--bordo);
+}

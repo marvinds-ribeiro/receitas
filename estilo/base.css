@@ -1,0 +1,210 @@
+/* Fundação: fontes, variáveis e reset.
+   Os valores desta folha vêm da especificação e não são negociáveis.
+   Estilo de tela fica em componentes.css. */
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../fontes/Fraunces.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Lora';
+  src: url('../fontes/Lora.woff2') format('woff2-variations');
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+:root {
+  /* paleta — valores exatos da especificação */
+  --papel: #f7f1e3;
+  --papel-fundo: #fdf9f0;
+  --verde: #1f4032;
+  --verde-claro: #4a6b5a;
+  --bordo: #7b2e2e;
+  --bordo-claro: #a85454;
+
+  /* derivadas: só transparências das cores acima, nenhuma cor nova */
+  --linha: color-mix(in srgb, var(--verde) 16%, transparent);
+  --linha-forte: color-mix(in srgb, var(--verde) 32%, transparent);
+  /* 72% é o mínimo que passa em 4,5:1 sobre os DOIS papéis (fundo 4,80 · papel 4,62).
+     Estava em 62% e dava 3,69 — abaixo do legível para o rótulo de 12px e para a linha
+     de observação do ingrediente, justamente o texto que se lê a um braço de distância. */
+  --tinta-fraca: color-mix(in srgb, var(--verde) 72%, transparent);
+  --toque: color-mix(in srgb, var(--verde) 8%, transparent);
+
+  /* tipografia */
+  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --corpo: 'Lora', Georgia, 'Times New Roman', serif;
+  /* a fonte de interface abre a lista de ingredientes e separa do corpo em prosa */
+  --interface: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Fraunces com o eixo SOFT alto, como manda a especificação */
+  --display-eixos: 'SOFT' 90, 'WONK' 1, 'opsz' 48;
+
+  /* mínimos de legibilidade — não reduzir */
+  --tamanho-corpo: 19px;
+  --entrelinha-corpo: 1.7;
+  --tamanho-ingrediente: 20px;
+  --alvo-toque: 48px;
+  --largura-conteudo: 42rem;
+
+  /* ritmo vertical */
+  --e1: 4px;
+  --e2: 8px;
+  --e3: 12px;
+  --e4: 16px;
+  --e5: 24px;
+  --e6: 32px;
+  --e7: 48px;
+  --e8: 64px;
+
+  --margem: 20px;
+  --raio: 10px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* o aparelho fica na bancada, mais longe que a leitura normal:
+     nunca deixar o sistema encolher o texto */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--papel-fundo);
+  color: var(--verde);
+  font-family: var(--corpo);
+  font-size: var(--tamanho-corpo);
+  line-height: var(--entrelinha-corpo);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  /* mão suja: nada de seleção acidental nem realce azul de toque */
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  /* todo alvo de toque respeita o mínimo */
+  min-height: var(--alvo-toque);
+  touch-action: manipulation;
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+:focus-visible {
+  outline: 3px solid var(--bordo-claro);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* largura útil: o conteúdo nunca passa de 42rem e sempre respira nas bordas */
+.envelope {
+  width: 100%;
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  padding-inline: var(--margem);
+}
+
+.falha {
+  padding: var(--e8) var(--margem);
+  text-align: center;
+}
+.falha-titulo {
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-size: 24px;
+  margin-bottom: var(--e3);
+}
+.falha-detalhe {
+  color: var(--tinta-fraca);
+  font-size: 16px;
+  margin-bottom: var(--e5);
+}
+
+/* só para leitor de tela */
+.so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* aviso de carregamento — só aparece quando a montagem passa de 350ms */
+.carregando {
+  padding: var(--e8) var(--margem);
+  text-align: center;
+  color: var(--tinta-fraca);
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-size: 24px;
+  animation: respirar 1.6s ease-in-out infinite;
+}
+@keyframes respirar {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.85; }
+}

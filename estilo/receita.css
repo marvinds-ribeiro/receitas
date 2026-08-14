@@ -1,0 +1,233 @@
+/* Cabeçalho da receita — folha da peça `js/componentes/cabecalho.js`.
+   Nada aqui alcança .ingredientes nem .passos: cada peça tem a sua folha.
+
+   Orçamento de altura: o NYT gasta quase uma tela inteira antes do primeiro
+   ingrediente. Aqui o topo (voltar + modo cozinha) cabe em uma faixa de 48px,
+   os metadados em uma linha só, e o controle de porções — que é o que mais
+   importa com a panela no fogo — fica na base, encostado nos ingredientes.
+
+   Escala tipográfica da casa: 34 título de tela · 27 numeral do controle ·
+   19 corpo · 17 prosa de apoio · 13 navegação, ação e metadado · 11 legenda. */
+
+.cabecalho-receita {
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  padding-bottom: var(--e3);
+}
+
+/* ------------------------------------------------------------------ topo
+   Faixa verde chapada de ponta a ponta, como a que abre o índice e a lista de
+   compras: as três telas começam do mesmo jeito e o caminho de saída está
+   sempre no mesmo canto. Duas pontas: voltar à esquerda, modo cozinha à
+   direita. A faixa não custa altura nenhuma — a linha já existia. */
+.cabecalho-receita-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  background: var(--verde);
+  color: var(--papel);
+  padding: var(--e2) var(--margem);
+}
+
+.cabecalho-receita-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  min-height: var(--alvo-toque);
+  margin-left: -6px;
+  padding-inline: 6px;
+  font-family: var(--interface);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--papel);
+  border-radius: var(--raio);
+}
+.cabecalho-receita-voltar:active {
+  background: var(--verde-claro);
+}
+
+/* seta desenhada, não ícone de biblioteca nem emoji */
+.cabecalho-receita-seta {
+  width: 9px;
+  height: 9px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+/* modo cozinha: vazado sobre o verde quando desligado, bloco de papel chapado
+   quando ligado. De um braço de distância a diferença é o bloco de cor. */
+.cabecalho-receita-cozinha {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  min-height: var(--alvo-toque);
+  padding-inline: var(--e4);
+  border: 1.5px solid color-mix(in srgb, var(--papel) 45%, transparent);
+  border-radius: var(--raio);
+  font-family: var(--interface);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--papel);
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.cabecalho-receita-cozinha:active {
+  background: var(--verde-claro);
+}
+.cabecalho-receita-cozinha[aria-pressed='true'] {
+  background: var(--papel);
+  border-color: var(--papel);
+  color: var(--verde);
+}
+.cabecalho-receita-cozinha[aria-pressed='true']:active {
+  background: var(--papel-fundo);
+}
+
+/* losango vazado/cheio: o mesmo ornamento da casa servindo de lâmpada */
+.cabecalho-receita-luz {
+  width: 9px;
+  height: 9px;
+  border: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+.cabecalho-receita-cozinha[aria-pressed='true'] .cabecalho-receita-luz {
+  background: currentColor;
+}
+
+/* ------------------------------------------------------------------ nome
+   O elemento mais forte da tela. Fraunces grande, entrelinha curta. */
+.cabecalho-receita-titulo {
+  padding-inline: var(--margem);
+  margin-top: var(--e4);
+  font-size: 34px;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'SOFT' 90, 'WONK' 1, 'opsz' 72;
+}
+
+/* --------------------------------------------------------------- metadados
+   Uma linha corrida em vez do bloco tabular do NYT: mesma informação,
+   um sexto da altura. Losango miúdo separando. */
+.cabecalho-receita-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-inline: var(--margem);
+  margin-top: var(--e2);
+  font-size: 13px;
+}
+.cabecalho-receita-meta span {
+  display: inline-flex;
+  align-items: center;
+}
+/* o losango fica preso ao item anterior: quando a linha quebra, o ornamento
+   sobra no fim da linha de cima e nunca abre a de baixo */
+.cabecalho-receita-meta span:not(:last-child)::after {
+  content: '';
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+  transform: rotate(45deg);
+  margin-inline: var(--e3);
+  opacity: 0.55;
+}
+
+/* ----------------------------------------------------------------- recado
+   O acento raro: o ÚNICO bordô da tela de receita. Sangra de ponta a ponta como
+   a faixa de aviso do Florian — bordô entra como bloco, nunca como fio nem como
+   texto colorido solto. Por isso o passo de agora, que também reivindicava o
+   bordô, passou a marcar-se em verde: numa receita com nota os dois apareciam
+   juntos e o orçamento de bordô da tela é um. */
+.cabecalho-receita-nota {
+  margin-top: var(--e4);
+  font-size: var(--tamanho-corpo);
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------- porções
+   Faixa de papel entre dois fios. Botões de 76×60 encostados nas pontas:
+   com a mão suja o polegar acerta sem mirar, e o número fica no meio,
+   longe de ser tocado sem querer. */
+.cabecalho-receita-porcoes {
+  display: flex;
+  align-items: stretch;
+  margin-top: var(--e4);
+  background: var(--papel);
+  border-top: 1px solid var(--linha-forte);
+  border-bottom: 1px solid var(--linha-forte);
+}
+
+.cabecalho-receita-botao {
+  flex: 0 0 76px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--verde);
+  border-inline: 1px solid var(--linha);
+  transition: background-color 0.1s ease;
+}
+.cabecalho-receita-botao:first-child {
+  border-inline-start: 0;
+}
+.cabecalho-receita-botao:last-child {
+  border-inline-end: 0;
+}
+.cabecalho-receita-botao:active {
+  background: var(--toque);
+}
+.cabecalho-receita-botao:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+.cabecalho-receita-sinal {
+  font-family: var(--interface);
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.cabecalho-receita-medida {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e1);
+  padding-block: var(--e2);
+  text-align: center;
+}
+.cabecalho-receita-legenda {
+  font-size: 11px;
+}
+.cabecalho-receita-valor {
+  display: flex;
+  align-items: baseline;
+  gap: var(--e2);
+  font-family: var(--interface);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--verde);
+}
+.cabecalho-receita-valor strong {
+  font-size: 27px;
+  font-weight: 700;
+}
+
+/* linha de honestidade: quanto a receita rende, de onde vem esse número e por
+   quanto ele multiplica. É prosa, e prosa da casa é Lora — a mesma voz e a
+   mesma medida da linha de contexto do índice e do estado vazio da lista. */
+.cabecalho-receita-dica {
+  padding-inline: var(--margem);
+  margin-top: var(--e3);
+  font-family: var(--corpo);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}

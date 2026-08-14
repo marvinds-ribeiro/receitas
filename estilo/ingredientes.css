@@ -1,0 +1,245 @@
+/* Ingredientes — folha da peça `js/componentes/ingredientes.js`.
+   Nada aqui alcança .cabecalho-receita nem .passos.
+
+   A regra da barra: uma linha por ingrediente, respiro grande entre elas,
+   quantidade sempre no mesmo lugar, fonte de interface, e NENHUM marcador,
+   zebrado, filete ou caixa dentro da lista. O que separa é o espaço.
+
+   Os únicos fios da peça são os do lado de fora da lista: um sob o título da
+   seção e um entre grupos. Ornamento onde ele organiza, nunca onde ele
+   atrapalha a descida do olho.
+
+   Escala tipográfica da casa: 27 título de seção · 20 ingrediente ·
+   17 qualificador · 16 título de grupo · 13 ação e sarjeta · 11 contagem. */
+
+.ingredientes {
+  position: relative; /* âncora da régua que mede a coluna */
+  margin-block: var(--e6) var(--e7);
+  font-family: var(--interface);
+  /* largura da coluna de quantidade: o JS mede a maior da receita */
+  --coluna-medida: 100px;
+  /* sarjeta do número + respiro até a quantidade */
+  --sarjeta: 16px;
+  --vao: 7px;
+}
+
+/* ------------------------------------------------------------------ cabeça
+   Título e contagem na mesma linha, como o "Yield" da barra — mesma
+   informação, uma fração da altura. */
+.ingredientes-cabeca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e1) var(--e3);
+}
+
+.ingredientes-titulo {
+  font-size: 27px;
+}
+
+.ingredientes-resumo {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.ingredientes-fio {
+  margin: var(--e3) 0 0;
+}
+
+/* ------------------------------------------------------------------- grupo
+   Só aparece quando a receita traz subtítulo. Sans em caixa alta, como todo
+   rótulo da casa, mas com o peso do verde cheio — é divisão de conteúdo,
+   não metadado. */
+.ingredientes-grupo {
+  font-family: var(--interface);
+  /* a mesma medida da âncora do passo: as duas são caixa alta que organiza uma
+     lista longa, e o app não precisa de dois tamanhos para o mesmo papel */
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--verde);
+  margin-top: var(--e5);
+}
+.ingredientes-fio-grupo {
+  margin: var(--e6) 0 0;
+}
+
+/* -------------------------------------------------------------------- lista */
+.ingredientes-lista {
+  margin-top: var(--e4);
+}
+
+/* o respiro entre linhas é metade espaço morto e metade alvo de toque:
+   o vão que o olho lê como linha em branco também é área que o polegar acerta */
+.ingredientes-item + .ingredientes-item {
+  margin-top: var(--e2);
+}
+
+.ingredientes-linha {
+  display: grid;
+  grid-template-columns: var(--sarjeta) var(--coluna-medida) 1fr;
+  column-gap: var(--vao);
+  align-items: baseline;
+  width: calc(100% + 2 * var(--e2));
+  margin-inline: calc(-1 * var(--e2));
+  padding: var(--e2);
+  min-height: var(--alvo-toque);
+  border-radius: var(--raio);
+  text-align: start;
+  color: var(--verde);
+  transition: background-color 0.12s ease;
+}
+.ingredientes-linha:active {
+  background: var(--toque);
+}
+
+/* ------------------------------------------------------------------ sarjeta
+   O número é endereço, não marcador: miúdo, apagado, alinhado à direita e
+   encostado na quantidade. Some do caminho e continua contando. */
+.ingredientes-numero {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+  text-align: right;
+  color: var(--tinta-fraca);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------- quantidade
+   A coluna que o olho desce. Borda esquerda reta e largura medida pelo JS: a
+   coluna nasce da maior quantidade da receita, com um teto — quatro de cada
+   cinco itens do acervo cabem em uma linha, e as unidades compridas do
+   português ("2 colheres (sopa)") preferem dobrar dentro da coluna a roubar
+   metade do nome do ingrediente. */
+.ingredientes-medida {
+  font-size: var(--tamanho-ingrediente);
+  font-weight: 600;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: break-word;
+}
+
+/* "a gosto" e "o quanto baste" não são medida: mesmo lugar, outro peso.
+   Não escalam com as porções, e a lista mostra isso sem precisar avisar. */
+.ingredientes-sem-medida {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--tinta-fraca);
+}
+
+/* régua invisível: mede a maior quantidade sem entrar na página */
+.ingredientes-regua {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------------- nome
+   Recuo pendurado: o emoji ocupa uma caixa de largura fixa e a segunda linha
+   volta para onde o NOME começa — nunca para debaixo do emoji. Item de duas
+   linhas não entorta a coluna. */
+.ingredientes-texto {
+  display: block;
+  padding-left: 26px;
+  font-size: var(--tamanho-ingrediente);
+  line-height: 1.3;
+  overflow-wrap: break-word;
+}
+
+/* o emoji é ornamento tipográfico da lista: contido numa caixa de largura fixa
+   que ele não passa, um ponto menor que o nome, sem cor nem peso próprios.
+   A margem negativa o pendura no recuo — o nome, e tudo que vier depois dele,
+   começa sempre na mesma vertical. */
+.ingredientes-emoji {
+  display: inline-block;
+  width: 26px;
+  margin-left: -26px;
+  font-size: 18px;
+  font-style: normal;
+}
+
+.ingredientes-nome {
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+/* o qualificador precisa aparecer sem competir: linha própria embaixo do nome,
+   menor e mais fraca, alinhada com o nome. Fora da linha do nome ele nunca
+   empurra o ingrediente para a quebra. */
+.ingredientes-obs {
+  display: block;
+  margin-top: 1px;
+  font-size: 17px;
+  line-height: 1.35;
+  color: var(--tinta-fraca);
+}
+
+/* ------------------------------------------------------------------ marcado
+   Mão suja na bancada: um toque na linha inteira risca o item já pego. O
+   número dá lugar ao tique — a sarjeta continua informando. */
+.ingredientes-linha[aria-pressed='true'] .ingredientes-medida,
+.ingredientes-linha[aria-pressed='true'] .ingredientes-texto {
+  color: var(--tinta-fraca);
+}
+.ingredientes-linha[aria-pressed='true'] .ingredientes-nome {
+  text-decoration: line-through;
+}
+.ingredientes-linha[aria-pressed='true'] .ingredientes-medida {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+.ingredientes-linha[aria-pressed='true'] .ingredientes-emoji {
+  opacity: 0.4;
+}
+.ingredientes-linha[aria-pressed='true'] .ingredientes-numero {
+  font-size: 0;
+}
+.ingredientes-linha[aria-pressed='true'] .ingredientes-numero::after {
+  content: '✓';
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--verde);
+}
+
+/* ---------------------------------------------------------------- desmarcar
+   Só existe depois que alguma coisa foi marcada. Discreto de propósito: é
+   conserto, não ação principal. */
+.ingredientes-limpar {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alvo-toque);
+  margin-top: var(--e3);
+  margin-inline-start: calc(-1 * var(--e2));
+  padding-inline: var(--e2);
+  border-radius: var(--raio);
+  font-family: var(--interface);
+  /* a ação miúda da casa: 13px em caixa alta espacejada, como a da lista */
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--tinta-fraca);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 5px;
+}
+.ingredientes-limpar[hidden] {
+  display: none;
+}
+.ingredientes-limpar:active {
+  background: var(--toque);
+  color: var(--verde);
+}
+
+.ingredientes-nenhum {
+  margin-top: var(--e3);
+  font-family: var(--interface);
+  font-size: 17px;
+  color: var(--tinta-fraca);
+}

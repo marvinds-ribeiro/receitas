@@ -1,0 +1,1143 @@
+/* Lista de compras — duas visões na mesma rota.
+
+   COMPRAR: a tela do mercado. Os itens vêm na ordem da caminhada pelos corredores,
+   a faixa de progresso gruda no topo e A LINHA É UMA LINHA: marca, nome e, numa
+   coluna de largura fixa à direita, a quantidade. Nada mais — nem emoji: o painel
+   de identidade proíbe gradiente, brilho e sombra 3D, e é exatamente disso que o
+   emoji do sistema é feito. O agrupamento por corredor faz o trabalho que ele
+   tentava fazer, e o espaço volta para o nome.
+
+   A coluna da quantidade tem largura fixa e o NÚMERO alinhado à esquerda dela: é o
+   número que o olho persegue no corredor, então é ele que fica no trilho, e não a
+   palavra da unidade. O resto — de qual receita veio, por que a fração subiu, quem
+   pede a gosto — mora atrás de um toque na coluna inteira, que é a única parte da
+   linha com fio pontilhado embaixo.
+
+   ESCOLHER: toma a tela inteira, com cabeçalho grudento e barra fixa no polegar.
+
+   Cor entra em bloco: faixa verde no topo, barra verde no rodapé. O bordô aparece
+   uma vez só, no botão que apaga a lista inteira — a única ação sem volta da tela.
+   Quando o ditado está aberto ele traz o PARAR, que é bordô por direito próprio
+   (emergência, e o maior alvo da peça); nesse momento o "apagar" cede o acento e
+   fica de contorno neutro, para o orçamento de um bordô por tela continuar de pé.
+
+   Escala tipográfica da casa, a mesma das outras telas:
+     46 nome da casa · 34 título de tela · 27 título de seção e sinal de passo
+     24 título de estado vazio · 20 nome de item · 19 corpo · 18 número da coluna
+     17 prosa de apoio · 16 unidade e nota · 13 navegação, ação e rótulo
+     11 contagem e legenda. Nenhum tamanho fora dessa lista. */
+
+.lista {
+  width: 100%;
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  /* altura da faixa de progresso: os cabeçalhos de corredor grudam logo abaixo dela */
+  --fita: 52px;
+  /* a lista respira menos nas bordas do que os blocos de texto: cada pixel devolvido
+     à margem é um pixel roubado do nome do item, que é o que se lê no corredor */
+  --margem-item: 16px;
+  /* de onde começa o nome: margem + marca + respiro */
+  --recuo-nome: 70px;
+  /* a coluna dos números: largura fixa, sempre a mesma, para o olho descer reto */
+  --coluna-medida: 96px;
+  /* calha entre o nome e a coluna — nunca menos que isto, ou as duas coisas
+     passam a ler como uma frase corrida ("Farinha de trigo tipo 00 500 g") */
+  --calha-medida: 24px;
+  /* o alvo tocável da quantidade: a coluna inteira, com calha e margem dentro */
+  --alvo-medida: calc(var(--coluna-medida) + var(--calha-medida) + var(--margem-item));
+}
+
+/* ------------------------------------------------------------------- faixa
+   O bloco verde de ponta a ponta: volta, título e contagem. */
+.lista-faixa {
+  background: var(--verde);
+  color: var(--papel);
+  padding: var(--e2) var(--margem) var(--e5);
+}
+
+.lista-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  min-height: var(--alvo-toque);
+  margin-left: -6px;
+  padding-inline: 6px;
+  border-radius: var(--raio);
+  color: var(--papel);
+  font-family: var(--interface);
+  /* o mesmo "voltar" da receita: mesma palavra, mesmo canto, mesmo peso, 13px */
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+}
+.lista-voltar:active {
+  background: var(--verde-claro);
+}
+.lista-voltar-seta {
+  width: 9px;
+  height: 9px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.lista-titulo {
+  font-size: 34px;
+  margin-top: var(--e2);
+  color: var(--papel);
+}
+
+/* a linha de contexto da capa verde: o mesmo desenho do índice */
+.lista-faixa-conta {
+  margin-top: var(--e2);
+  color: var(--papel);
+  opacity: 0.75;
+  font-size: 13px;
+}
+
+/* -------------------------------------------------------------- fita fixa
+   No mercado, quanto falta e o caminho de volta não podem ficar 3.600px acima.
+   44px de informação + 8px de barra: gruda no topo e desce junto com a rolagem. */
+.lista-fita {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--papel);
+}
+.lista-fita[hidden] {
+  display: none;
+}
+.lista-fita-linha {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  min-height: 44px;
+  padding: 0 var(--margem);
+}
+.lista-fita-conta {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--verde);
+  letter-spacing: 0.11em;
+}
+.lista-fita-atalho {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  min-height: 44px;
+  margin-right: -8px;
+  padding-inline: var(--e2);
+  border-radius: var(--raio);
+  color: var(--verde);
+  font-family: var(--interface);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+/* o alvo de toque passa de 48px sem engordar a faixa */
+.lista-fita-atalho::before {
+  content: '';
+  position: absolute;
+  inset: -4px -8px;
+}
+.lista-fita-atalho:active {
+  background: var(--toque);
+}
+/* Aponta para a DIREITA, e é a única seta da tela que aponta para lá. O "‹" da
+   faixa verde quer dizer "sair desta tela" — em toda tela do app. Este atalho não
+   sai: ele entra na visão de escolher receitas. Duas setas iguais com destinos
+   opostos era a costura mais barata de desfazer da peça. */
+.lista-fita-seta {
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+/* barra de progresso: dois blocos chapados, sem gradiente, de ponta a ponta */
+.lista-trilho {
+  height: 8px;
+  background: var(--papel-fundo);
+  border-top: 1px solid var(--linha);
+  overflow: hidden;
+}
+.lista-trilho-cheio {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--verde);
+  transition: width 0.18s ease;
+}
+
+/* ------------------------------------------------------------------- dobra
+   Cabeçalho de bloco que abre e fecha. O mesmo desenho em toda a tela, para que
+   uma seta apontando para baixo signifique sempre a mesma coisa. */
+.lista-dobra {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  width: 100%;
+  min-height: 52px;
+  padding: 0 var(--margem);
+  text-align: left;
+}
+.lista-dobra:active {
+  background: var(--linha);
+}
+.lista-dobra-titulo {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--verde);
+  letter-spacing: 0.14em;
+}
+/* contagem sempre com a palavra junto: "5" sozinho ao lado de um título não diz
+   de quê, e no mercado ninguém para para adivinhar */
+.lista-dobra-conta {
+  font-family: var(--interface);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--tinta-fraca);
+  font-variant-numeric: tabular-nums;
+}
+.lista-dobra-seta {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--verde);
+  border-bottom: 2px solid var(--verde);
+  transform: rotate(45deg) translate(-2px, -2px);
+}
+.lista-dobra[aria-expanded='true'] .lista-dobra-seta {
+  transform: rotate(-135deg) translate(-3px, 3px);
+}
+/* botão de largura inteira que revela um bloco grande (o ditado) */
+.lista-dobra-larga {
+  display: flex;
+  width: 100%;
+  margin-top: var(--e5);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+/* Aberto, ele vira contorno. Fechar o ditado é a ação menor da hora — o comando
+   que importa passa a ser o "Começar a ditar" de dentro do painel. E tira um dos
+   três blocos verdes que se empilhavam no rodapé: sobra o palco e o botão dele. */
+.lista-dobra-larga[aria-expanded='true'] {
+  background: transparent;
+  color: var(--verde);
+  border: 1.5px solid var(--linha-forte);
+}
+.lista-dobra-larga[aria-expanded='true']:active {
+  background: var(--toque);
+  color: var(--verde);
+}
+
+/* ------------------------------------------------------- receitas e porções
+   Era um parágrafo de cinco linhas em versalete, ilegível e sem nenhum comando.
+   Virou uma dobra fechada: no mercado ninguém precisa dela, e quem precisa mudar
+   as porções de uma receita já escolhida faz isso aqui, sem sair da tela.
+
+   E, por isso mesmo, desceu para o rodapé. Empilhada no topo ela era a TERCEIRA
+   faixa de chrome antes do primeiro item — faixa verde, fita de progresso e ela —
+   numa tela cuja pergunta é "o que falta pegar". No rodapé fica junto das outras
+   duas coisas que só se fazem em casa: ditar a lista e apagá-la.
+   O rodapé já tem margem lateral; a faixa volta a sangrar de ponta a ponta para
+   continuar sendo a mesma dobra das outras. */
+.lista-fontes {
+  margin-inline: calc(var(--margem) * -1);
+  background: var(--papel);
+  border-top: 1px solid var(--linha);
+  border-bottom: 1px solid var(--linha);
+}
+.lista-fontes[hidden] {
+  display: none;
+}
+.lista-fontes-cabecalho {
+  padding: var(--e2) var(--margem) 0;
+  font-size: 11px;
+  text-align: right;
+}
+.lista-fonte {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  min-height: 60px;
+  padding: var(--e2) var(--margem);
+  border-top: 1px solid var(--linha);
+}
+.lista-fonte:first-child {
+  border-top: 0;
+}
+.lista-fonte-nome {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--corpo);
+  font-size: 19px;
+  line-height: 1.25;
+}
+.lista-fonte-passos {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--e1);
+}
+.lista-fonte-passo {
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  min-height: var(--alvo-toque);
+  background: var(--papel-fundo);
+  border: 1.5px solid var(--linha-forte);
+  border-radius: var(--raio);
+  font-family: var(--interface);
+  /* o mesmo sinal de mais/menos do controle de porções da receita: 27px em toda
+     parte. Eram três tamanhos para o mesmo glifo no app (22, 24 e 27). */
+  font-size: 27px;
+  line-height: 1;
+}
+.lista-fonte-passo:active {
+  background: var(--verde);
+  border-color: var(--verde);
+  color: var(--papel);
+}
+.lista-fonte-valor {
+  min-width: 32px;
+  text-align: center;
+  font-family: var(--interface);
+  font-size: 19px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.lista-fontes-botao {
+  display: flex;
+  width: calc(100% - var(--margem) * 2);
+  margin: var(--e3) var(--margem) var(--e5);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* --------------------------------------------------------------- corredor
+   A ordem de caminhada do mercado. O cabeçalho gruda logo abaixo da fita. */
+.lista-corredor-cabeca {
+  position: sticky;
+  top: var(--fita);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  min-height: 36px;
+  padding: var(--e2) var(--margem-item);
+  background: var(--papel);
+  border-top: 1px solid var(--linha-forte);
+  border-bottom: 1px solid var(--linha-forte);
+}
+.lista-corredor-nome {
+  font-size: 13px;
+  color: var(--verde);
+  letter-spacing: 0.16em;
+}
+/* uma leitura só, nos dois estados: quantos ainda faltam pegar neste corredor */
+.lista-corredor-conta {
+  flex: 0 0 auto;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.lista-tudo-pronto {
+  padding: var(--e7) var(--margem);
+  font-family: var(--corpo);
+  font-size: 19px;
+  color: var(--tinta-fraca);
+}
+
+/* ------------------------------------------------------------- item da lista
+   Uma linha, uma leitura: NOME à esquerda, QUANTIDADE à direita, e o olho desce
+   pela coluna sem reler. Dois alvos, os dois altos: o grande põe no carrinho, o
+   da quantidade abre o detalhe. */
+.lista-item {
+  display: grid;
+  /* minmax(0,…) e não 1fr puro: nome comprido não pode empurrar a coluna dos
+     números para fora dos 390px */
+  grid-template-columns: minmax(0, 1fr) var(--alvo-medida);
+  align-items: stretch;
+}
+.lista-item + .lista-item {
+  border-top: 1px solid var(--linha);
+}
+
+.lista-item-alvo {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  column-gap: var(--e2);
+  align-items: center;
+  min-height: 64px;
+  padding: var(--e2) 0 var(--e2) var(--margem-item);
+  text-align: left;
+}
+/* realce de toque — o dedo não tem hover */
+.lista-item-alvo:active {
+  background: var(--linha);
+}
+
+/* marca de conferido — a mesma nas duas visões */
+.lista-marca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border: 2px solid var(--linha-forte);
+  border-radius: 7px;
+  background: var(--papel-fundo);
+}
+.lista-marca::after {
+  content: '';
+  width: 20px;
+  height: 10px;
+  border-left: 3px solid var(--papel);
+  border-bottom: 3px solid var(--papel);
+  transform: rotate(-45deg) translate(2px, -3px);
+  opacity: 0;
+}
+.lista-marca-media {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+}
+.lista-marca-media::after {
+  width: 13px;
+  height: 7px;
+  border-left-width: 2.5px;
+  border-bottom-width: 2.5px;
+  transform: rotate(-45deg) translate(1px, -2px);
+}
+
+/* O nome nunca parte palavra: os hifens já vêm não separáveis do JS, e aqui a
+   quebra fica proibida em qualquer lugar que não seja um espaço. */
+.lista-item-nome {
+  min-width: 0;
+  font-family: var(--corpo);
+  font-size: var(--tamanho-ingrediente);
+  font-weight: 500;
+  line-height: 1.25;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+  -webkit-hyphens: none;
+}
+
+/* ------- a quantidade, e a porta do detalhe
+   O alvo é a coluna inteira: 136px de largura por 64px de altura, altura cheia da
+   linha. Antes era só o texto — em "Limão tahiti 1" isso dava 20px colados no alvo
+   de marcar, e errar para a esquerda punha o item no carrinho. */
+.lista-item-medida {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 64px;
+  padding: var(--e2) var(--margem-item) var(--e2) var(--calha-medida);
+  text-align: left;
+}
+.lista-item-medida:active {
+  background: var(--linha);
+}
+.lista-item-bloco {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: var(--coluna-medida);
+}
+.lista-item-valor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 4px;
+  row-gap: 0;
+  max-width: var(--coluna-medida);
+  /* fio pontilhado: a única marca de "tem mais coisa aqui dentro" da linha —
+     e agora ele aparece também no bloco de várias medidas, que é justamente o
+     item que mais precisa de explicação */
+  padding-bottom: 3px;
+  border-bottom: 2px dotted var(--linha-forte);
+}
+.lista-item-aberto .lista-item-valor {
+  border-bottom-style: solid;
+  border-bottom-color: var(--verde);
+}
+/* O que a conta fez com o número, escrito — nunca em símbolo. Mora DENTRO da caixa
+   da quantidade, em linha própria acima do fio pontilhado e no mesmo eixo do
+   número: pendurado embaixo do fio ele transbordava o eixo direito da unidade e
+   ficava órfão, solto da coisa que explica. */
+.lista-item-aviso {
+  flex: 0 0 100%;
+  max-width: var(--coluna-medida);
+  margin-top: 2px;
+  font-family: var(--interface);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  /* Fica em 11px de propósito: é o menor degrau da escala, e a 13px a palavra
+     "ARREDONDADO" estoura os 96px da coluna e quebra em duas linhas, desmontando
+     o eixo de números. Em vez de crescer, ganha tinta — verde-claro dá 5,64:1
+     contra o papel, acima do alvo, e a anotação para de sumir. */
+  color: var(--verde-claro);
+}
+.lista-item-num {
+  font-family: var(--interface);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.lista-item-un {
+  font-family: var(--interface);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--tinta-fraca);
+  /* unidade comprida desce para a linha de baixo em vez de estourar a coluna */
+  overflow-wrap: break-word;
+}
+/* "a gosto" não é número: fica claro que não há o que pesar */
+.lista-item-livre {
+  font-family: var(--interface);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--tinta-fraca);
+}
+
+/* Mesmo item, medidas que não se somam: um nome só e as medidas empilhadas, as
+   duas do mesmo tamanho e do mesmo peso — são dois pares iguais, não uma
+   principal e uma nota de rodapé. Nada é convertido: peso continua peso, volume
+   continua volume.
+
+   O bloco fica NA COLUNA DOS NÚMEROS, e não recuado sob o nome. Antes, Cebola e
+   Sal desciam as medidas para x≈70 enquanto os outros 26 números começavam todos
+   em x≈278: dois buracos no único eixo que a tela tem. O filete vertical continua
+   sendo a marca de "aqui são duas", agora encostado na calha da coluna. */
+.lista-item-pilha {
+  grid-row: 1;
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--e2);
+  min-height: 64px;
+  /* 2 de filete + 22 de calha = os mesmos 24px de calha da medida única, e o
+     número cai no mesmo x que o das outras linhas */
+  padding: var(--e2) var(--margem-item) var(--e2) 22px;
+  border-left: 2px solid var(--linha-forte);
+  text-align: left;
+}
+.lista-item-pilha:active {
+  background: var(--linha);
+}
+.lista-item-aberto .lista-item-pilha {
+  border-left-color: var(--verde);
+}
+
+/* ------- riscado de verdade: o item pego apaga e a linha recua. Sem o recuo,
+   marca e nome ficavam no mesmo x dos não marcados e o risco era a única
+   diferença — dentro do corredor, o degrau é o que separa.
+
+   O RISCO É NO NOME, NUNCA NO NÚMERO. Riscado, "1,4 kg" lia "1;4" e "300 ml"
+   virava "300 mI": reler a quantidade de um item já pego custava mais do que
+   reler o nome, e é justamente a quantidade que se confere na frente da
+   prateleira. O número desbota, e é o desbotar que diz que já foi. */
+.lista-corpo .lista-item-marcado .lista-item-alvo {
+  padding-left: calc(var(--margem-item) + 14px);
+}
+
+.lista-item-marcado .lista-marca {
+  background: var(--verde);
+  border-color: var(--verde);
+}
+.lista-item-marcado .lista-marca::after {
+  opacity: 1;
+}
+.lista-item-marcado .lista-item-nome {
+  color: var(--tinta-fraca);
+  font-weight: 400;
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+.lista-item-marcado .lista-item-num,
+.lista-item-marcado .lista-item-un,
+.lista-item-marcado .lista-item-livre,
+.lista-item-marcado .lista-item-aviso {
+  color: var(--tinta-fraca);
+}
+.lista-item-marcado .lista-item-num {
+  font-weight: 500;
+}
+.lista-item-marcado .lista-item-valor {
+  border-bottom-color: var(--linha);
+}
+.lista-item-marcado .lista-item-pilha {
+  border-left-color: var(--linha);
+}
+
+/* ------- o detalhe: o que serve em casa e é ruído no mercado.
+   O fundo é papel — o mais quente da paleta —, e não um véu de tinta que puxava
+   para o cinza frio: é a única superfície do app que não sai do papel. */
+.lista-item-detalhe {
+  grid-column: 1 / -1;
+  padding: var(--e2) var(--margem-item) var(--e4) var(--recuo-nome);
+  background: var(--papel);
+  border-top: 1px solid var(--linha);
+  border-bottom: 1px solid var(--linha);
+}
+.lista-item-detalhe-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+}
+.lista-item-detalhe-rotulo {
+  font-size: 11px;
+  color: var(--verde);
+}
+/* abrir sem porta de saída visível obriga a caçar a quantidade de novo */
+.lista-item-fechar {
+  flex: 0 0 auto;
+  margin-inline: 0;
+}
+.lista-item-fontes {
+  margin-top: var(--e2);
+}
+/* O painel que EXPLICA a coluna era o único lugar da tela que não a respeitava:
+   alinhava as quantidades à direita, contra o x≈278 de todas as outras. Agora é
+   grade, e a coluna da direita tem a mesma largura da coluna de medidas — as
+   quantidades caem no mesmo trilho do resto da lista. */
+.lista-item-fonte {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--coluna-medida);
+  align-items: baseline;
+  column-gap: var(--e3);
+  font-family: var(--corpo);
+  font-size: 17px;
+  line-height: 1.45;
+}
+.lista-item-fonte + .lista-item-fonte {
+  margin-top: var(--e1);
+}
+.lista-item-fonte-nome {
+  min-width: 0;
+}
+.lista-item-fonte-medida {
+  font-family: var(--interface);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+}
+/* sem medida ao lado não há coluna a respeitar: o nome usa a linha toda */
+.lista-item-fonte-simples {
+  display: block;
+}
+.lista-item-nota {
+  margin-top: var(--e2);
+  font-family: var(--corpo);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}
+
+/* ------------------------------------------------------- já no carrinho
+   Começa recolhido: no mercado a pergunta é o que falta, não o que já foi.
+   E marcar não empurra a lista — o item só desce para cá quando a rolagem para. */
+.lista-feitos {
+  margin-top: var(--e6);
+  border-top: 4px double var(--linha-forte);
+  background: var(--papel);
+}
+.lista-feitos[hidden] {
+  display: none;
+}
+.lista-feitos-itens {
+  border-top: 1px solid var(--linha);
+}
+/* Linha já comprada é registro, não tarefa: comprime o espaço em volta e o nome
+   desce para o corpo de 19px. Dez linhas de 65px ocupavam mais tela do que a
+   seção de perecíveis que ainda falta comprar.
+
+   O que NÃO comprime é a caixa de marcar: ela era 46px no corredor e 30px aqui
+   dentro, e é o mesmo controle fazendo a mesma coisa — desmarcar o que foi pego
+   por engano é tão comum quanto marcar. Tamanho único, 46px nos dois lugares. */
+.lista-feitos-itens .lista-item-alvo {
+  min-height: var(--alvo-toque);
+  padding-block: var(--e1);
+}
+.lista-feitos-itens .lista-item-nome {
+  font-size: var(--tamanho-corpo);
+  line-height: 1.2;
+}
+.lista-feitos-itens .lista-item-medida {
+  min-height: var(--alvo-toque);
+  padding-block: var(--e1);
+}
+.lista-feitos-itens .lista-item-num {
+  font-size: 16px;
+}
+.lista-feitos-itens .lista-item-un,
+.lista-feitos-itens .lista-item-livre {
+  font-size: 13px;
+}
+.lista-feitos-itens .lista-item-pilha {
+  min-height: var(--alvo-toque);
+  gap: var(--e1);
+  padding-block: var(--e1);
+}
+.lista-feitos-rodape {
+  padding: var(--e4) var(--margem) var(--e5);
+  border-top: 1px solid var(--linha);
+}
+/* era versalete sem contorno e sem fundo, com o desenho de um título de seção:
+   lia como cabeçalho e agia como comando destrutivo. Agora é botão. */
+.lista-feitos-tirar {
+  display: flex;
+  width: 100%;
+  margin-bottom: var(--e2);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+/* Ação miúda de fechar/confirmar — "Fechar" no detalhe, "Pronto" na gaveta.
+   Era palavra solta, sem contorno: o alvo existia (48px de altura) mas não se via,
+   e era o alvo mais difícil da peça. Agora tem caixa, com 48px nos dois eixos. */
+.lista-acao-miuda {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--alvo-toque);
+  min-height: var(--alvo-toque);
+  padding-inline: var(--e3);
+  border: 1.5px solid var(--linha-forte);
+  border-radius: var(--raio);
+  font-family: var(--interface);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--verde);
+}
+.lista-acao-miuda:active {
+  background: var(--toque);
+}
+/* a diferença entre os dois comandos destrutivos fica escrita, não subentendida */
+.lista-nota {
+  font-family: var(--corpo);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}
+
+/* ------------------------------------------------------------------ rodapé */
+.lista-rodape {
+  padding: 0 var(--margem) var(--e8);
+}
+.lista-ditado {
+  margin-top: var(--e5);
+}
+.lista-ditado[hidden] {
+  display: none;
+}
+.lista-descarte {
+  margin-top: var(--e6);
+  padding-top: var(--e5);
+  border-top: 2px dotted var(--linha-forte);
+}
+/* O único bordô da tela — mas de contorno, sobre papel. Preenchido, ele era o
+   controle mais convidativo do rodapé, mais pesado que "Ditar a lista para a
+   Alexa": o bloco de cor sólido fica com a ação construtiva, e a destrutiva
+   guarda só a cor rara na borda e na letra. Ainda assim pede dois toques. */
+.lista-limpar {
+  display: inline-flex;
+  background: transparent;
+  color: var(--bordo);
+  border: 1.5px solid var(--bordo);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.lista-limpar:active {
+  background: color-mix(in srgb, var(--bordo) 10%, transparent);
+  color: var(--bordo);
+}
+/* O orçamento de bordô da tela é UM. Com o ditado aberto entram na mesma rolagem
+   o PARAR do ditado — bordô por direito próprio: é a emergência e o maior alvo da
+   peça — e este contorno. Quem cede é o permanente, não o de emergência: enquanto
+   o painel está aberto, "apagar a lista" fica de contorno neutro. Armado, no
+   segundo toque, ele retoma o bordô: aí a ação já é a que a pessoa pediu. */
+.lista-rodape:has(.ditado) .lista-limpar:not(.lista-limpar-armado) {
+  color: var(--verde);
+  border-color: var(--linha-forte);
+}
+.lista-rodape:has(.ditado) .lista-limpar:not(.lista-limpar-armado):active {
+  background: var(--toque);
+  color: var(--verde);
+}
+.lista-limpar-nota {
+  margin-top: var(--e3);
+}
+/* armado, sim: aí o bloco de cor cheio se justifica — o peso aparece no segundo
+   toque, quando a ação já é a que a pessoa pediu, e não como convite no rodapé */
+.lista-limpar-armado {
+  display: flex;
+  width: 100%;
+  background: var(--bordo);
+  color: var(--papel);
+  border-color: var(--bordo);
+  outline: 2px solid var(--bordo-claro);
+  outline-offset: 3px;
+}
+.lista-limpar-armado:active {
+  background: var(--bordo-claro);
+  color: var(--papel);
+}
+
+/* ------------------------------------------------------------ estado vazio
+   Alinhado à esquerda, duas linhas no máximo, e o que sobrava de tela morta
+   embaixo do botão virou a promessa escrita. */
+.lista-vazio {
+  padding: var(--e6) var(--margem) var(--e8);
+  text-align: left;
+}
+.lista-vazio .vazio-titulo {
+  font-size: 24px;
+}
+.lista-vazio-texto {
+  font-family: var(--corpo);
+  font-size: 17px;
+  line-height: 1.55;
+  margin: var(--e2) 0 var(--e5);
+}
+.lista-vazio-botao {
+  display: flex;
+  width: 100%;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.lista-vazio .fio-pontilhado {
+  margin: var(--e6) 0 var(--e4);
+}
+.lista-vazio-rotulo {
+  font-size: 11px;
+  color: var(--verde);
+}
+.lista-vazio-notas {
+  margin-top: var(--e3);
+}
+.lista-vazio-nota {
+  position: relative;
+  padding-left: var(--e4);
+  font-family: var(--corpo);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--tinta-fraca);
+}
+.lista-vazio-nota + .lista-vazio-nota {
+  margin-top: var(--e2);
+}
+.lista-vazio-nota::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 5px;
+  height: 5px;
+  background: var(--verde);
+  transform: rotate(45deg);
+  opacity: 0.55;
+}
+
+/* ================================================================ ESCOLHER */
+.lista-escolher {
+  display: block;
+  --fundo: 92px;
+  /* a barra fixa não pode cobrir a última receita */
+  padding-bottom: calc(var(--fundo) + env(safe-area-inset-bottom, 0px) + var(--e5));
+}
+.lista-escolher-com-gaveta {
+  --fundo: 200px;
+}
+.lista-escolher[hidden] {
+  display: none;
+}
+
+/* Cabeçalho grudento: só a busca. Tinha, acima dela, uma linha fixa que repetia
+   ao pé da letra o título e o "‹ Lista" do cabeçalho verde logo acima — 47px de
+   altura útil gastos em repetição, e um terceiro desenho de "voltar" no app.
+   O caminho de volta já mora na barra fixa do rodapé, à altura do polegar, e o
+   nome da tela está no cabeçalho de onde ela veio. */
+.lista-cabeca {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--papel-fundo);
+  border-bottom: 1px solid var(--linha);
+}
+
+.lista-busca {
+  padding: var(--e3) var(--margem);
+}
+.lista-campo {
+  width: 100%;
+  height: var(--alvo-toque);
+  padding: 0 var(--e4);
+  background: var(--papel);
+  border: 1.5px solid var(--linha-forte);
+  border-radius: var(--raio);
+  font-family: var(--corpo);
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--verde);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.lista-campo::placeholder {
+  color: var(--tinta-fraca);
+}
+.lista-campo::-webkit-search-cancel-button,
+.lista-campo::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* o mesmo cabeçalho de letra do índice: glifo de 27px em Fraunces e fio pontilhado */
+.lista-grupo-letra {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  padding: var(--e5) var(--margem) var(--e1);
+  font-size: 13px;
+}
+.lista-grupo-glifo {
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-size: 27px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.lista-grupo-fio {
+  flex: 1;
+  height: 0;
+  border-top: 2px dotted var(--linha-forte);
+}
+
+/* a coluna da direita fica sempre reservada: mostrar o número escolhido não
+   empurra a lista nem faz a pessoa perder o lugar */
+.lista-escolha {
+  display: grid;
+  grid-template-columns: 1fr 92px;
+  align-items: stretch;
+  border-top: 1px solid var(--linha);
+}
+.lista-escolha:first-child {
+  border-top: 0;
+}
+.lista-escolha-alvo {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: var(--e3);
+  align-items: center;
+  width: 100%;
+  min-height: 60px;
+  padding: var(--e3) 0 var(--e3) var(--margem);
+  text-align: left;
+}
+.lista-escolha-alvo:active {
+  background: var(--linha);
+}
+.lista-escolha-texto {
+  min-width: 0;
+}
+.lista-escolha-nome {
+  display: block;
+  font-family: var(--corpo);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+/* categoria e rendimento numa linha só: o espacejamento cede o que o tamanho
+   tomou, para "ACOMPANHAMENTO · RENDE 2 PORÇÕES" não quebrar em duas */
+.lista-escolha-meta {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.lista-escolha-ativa {
+  background: var(--toque);
+}
+.lista-escolha-ativa .lista-marca {
+  background: var(--verde);
+  border-color: var(--verde);
+}
+.lista-escolha-ativa .lista-marca::after {
+  opacity: 1;
+}
+.lista-escolha-foco {
+  background: var(--linha);
+}
+
+/* o número que a pessoa pediu — rotulado, para não se confundir com o rendimento */
+.lista-escolha-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-height: var(--alvo-toque);
+  margin: var(--e2) var(--margem) var(--e2) 0;
+  padding: 0 var(--e1);
+  border: 1.5px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--papel);
+}
+.lista-escolha-chip[hidden] {
+  display: none;
+}
+.lista-escolha-chip:active {
+  background: var(--linha);
+}
+/* "VOU FAZER" cabe numa linha só dentro do chip: espacejamento curto */
+.lista-escolha-chip-rotulo {
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.lista-escolha-chip-valor {
+  font-family: var(--interface);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.lista-sem-achado {
+  padding-top: var(--e7);
+  font-size: 17px;
+}
+
+/* barra fixa da visão de escolher: o caminho de volta mora onde o polegar está */
+.lista-barra {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  background: var(--papel);
+  border-top: 3px double var(--linha-forte);
+  padding: var(--e3) var(--margem);
+  padding-bottom: calc(var(--e3) + env(safe-area-inset-bottom, 0px));
+}
+.lista-barra-interna {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+}
+.lista-barra-conta {
+  flex: 1;
+  font-size: 11px;
+}
+.lista-barra-pronto {
+  flex: 0 0 auto;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* gaveta de porções: fixa, à altura do polegar. Abrir não move a lista. */
+.lista-gaveta {
+  max-width: var(--largura-conteudo);
+  margin: 0 auto var(--e3);
+  padding-bottom: var(--e3);
+  border-bottom: 2px dotted var(--linha-forte);
+}
+.lista-gaveta[hidden] {
+  display: none;
+}
+.lista-gaveta-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e2);
+}
+.lista-gaveta-nome {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--corpo);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.lista-gaveta-rende {
+  margin-left: var(--e1);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.lista-gaveta-fechar {
+  flex: 0 0 auto;
+  margin-inline: 0;
+}
+
+.lista-porcoes {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  margin-top: var(--e2);
+}
+.lista-porcoes-rotulo {
+  flex: 1;
+  font-size: 11px;
+}
+.lista-porcoes-passo {
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  min-height: var(--alvo-toque);
+  background: var(--papel-fundo);
+  border: 1.5px solid var(--linha-forte);
+  border-radius: var(--raio);
+  font-family: var(--interface);
+  font-size: 27px;
+  line-height: 1;
+}
+.lista-porcoes-passo:active {
+  background: var(--verde);
+  border-color: var(--verde);
+  color: var(--papel);
+}
+.lista-porcoes-valor {
+  min-width: 96px;
+  text-align: center;
+  font-family: var(--interface);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
