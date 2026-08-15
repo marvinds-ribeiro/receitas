@@ -6,7 +6,23 @@
 // A rolagem é longa de propósito, então a navegação por letra vive no rodapé, onde o
 // polegar chega: o botão "A–Z" abre uma gaveta com as 16 letras em alvos de 56px.
 
-import { carregarIndice, buscar, porLetra, sair } from '../dados.js';
+import { carregarIndice, buscar, porLetra, sair, semAcento } from '../dados.js';
+import {
+  ETIQUETAS,
+  aoMudar as aoMudarEtiquetas,
+  etiquetasDe,
+  nomeDaEtiqueta,
+} from '../etiquetas.js';
+import {
+  RECADOS,
+  aoMudarConta,
+  aoMudarNuvem,
+  contaAtual,
+  entrar,
+  estadoDaNuvem,
+  sairDaConta,
+  trocarDeConta,
+} from '../nuvem.js';
 // categoria e tempo se escrevem num lugar só: o índice e o cabeçalho da receita
 // mostram o mesmo metadado e agora com as mesmas palavras
 import { nomeDaCategoria, textoTempo } from '../componentes/cabecalho.js';
@@ -86,7 +102,14 @@ export default {
     capa.innerHTML = `
       <p class="rotulo">Índice A–Z</p>
       <h1 class="indice-titulo">Receitas do Marcus</h1>
-      <p class="indice-capa-sub">${indice.length} receitas da casa, todas nesta página.</p>`;
+      <p class="indice-capa-sub">${indice.length} receitas da casa, todas nesta página.</p>
+      <a class="indice-destaque" href="#/semana">
+        <span class="indice-destaque-texto">
+          <span class="indice-destaque-nome">Cardápio da semana</span>
+          <span class="indice-destaque-sub">Monte segunda a sexta e gere a lista de compras</span>
+        </span>
+        <span class="indice-destaque-seta" aria-hidden="true"></span>
+      </a>`;
 
     // ----------------------------------------------------------------- busca
     const busca = document.createElement('div');
@@ -102,6 +125,40 @@ export default {
       </div>`;
     const campo = busca.querySelector('.indice-campo');
     const limpar = busca.querySelector('.indice-busca-limpar');
+
+    // -------------------------------------------------------------- filtros
+    // Uma etiqueta por vez: duas ligadas ao mesmo tempo respondem a uma pergunta
+    // que ninguém faz ("o que é almoço semanal E sobremesa?") e escondem a
+    // resposta da que interessa. Tocar de novo desliga.
+    let filtroAtivo = null;
+
+    const filtros = document.createElement('div');
+    filtros.className = 'indice-filtros';
+    filtros.setAttribute('role', 'group');
+    filtros.setAttribute('aria-label', 'Filtrar por etiqueta');
+    for (const { id, nome } of ETIQUETAS) {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'indice-filtro';
+      chip.dataset.etiqueta = id;
+      chip.setAttribute('aria-pressed', 'false');
+      chip.textContent = nome;
+      filtros.append(chip);
+    }
+
+    function pintarFiltros() {
+      for (const chip of filtros.children) {
+        chip.setAttribute('aria-pressed', chip.dataset.etiqueta === filtroAtivo ? 'true' : 'false');
+      }
+    }
+
+    filtros.addEventListener('click', (evento) => {
+      const chip = evento.target.closest('.indice-filtro');
+      if (!chip) return;
+      filtroAtivo = filtroAtivo === chip.dataset.etiqueta ? null : chip.dataset.etiqueta;
+      pintarFiltros();
+      aplicarBusca();
+    });
 
     // ----------------------------------------------------------------- lista
     const lista = document.createElement('div');
@@ -137,7 +194,82 @@ export default {
       }, 4000);
     });
 
-    tela.append(capa, busca, lista, fecho);
+    // ------------------------------------------------ conta da casa (só editar)
+    // Mora ao lado do "Sair", no fim da rolagem, pelo mesmo motivo que ele: é
+    // ajuste de casa, não navegação de cozinha. E é redesenhado inteiro a cada
+    // mudança — botão que sumiu tem que sumir do DOM, não ficar escondido
+    // esperando um toque torto com a mão suja.
+    const contaCaixa = document.createElement('section');
+    contaCaixa.className = 'indice-conta';
+    let recado = null;
+
+    function desenharConta() {
+      const estado = estadoDaNuvem();
+      const atual = contaAtual();
+      contaCaixa.replaceChildren();
+      if (estado === 'desligada' && !recado) return;
+
+      const titulo = document.createElement('p');
+      titulo.className = 'rotulo indice-conta-titulo';
+      titulo.textContent = 'Edições compartilhadas';
+      contaCaixa.append(titulo);
+
+      if (atual) {
+        const email = document.createElement('p');
+        email.className = 'indice-conta-email';
+        email.textContent = atual.email;
+        contaCaixa.append(email);
+      }
+
+      const dizer = recado ?? (estado === 'ligada' ? null : RECADOS[estado]);
+      if (dizer) {
+        const aviso = document.createElement('p');
+        aviso.className = 'indice-conta-aviso';
+        aviso.textContent = dizer;
+        contaCaixa.append(aviso);
+      }
+
+      const botao = (acao, texto, vazado = true) => {
+        const b = document.createElement('button');
+        b.className = `botao ${vazado ? 'botao-vazado ' : ''}indice-conta-botao`;
+        b.type = 'button';
+        b.dataset.acao = acao;
+        b.textContent = texto;
+        contaCaixa.append(b);
+      };
+
+      if (estado === 'sem-conta') botao('entrar-conta', 'Entrar com o Google', false);
+      if (estado === 'sem-acesso') botao('trocar-conta', 'Trocar de conta', false);
+      if (estado === 'ligada') botao('sair-conta', 'Sair da conta');
+    }
+
+    contaCaixa.addEventListener('click', async (evento) => {
+      const acao = evento.target.closest('[data-acao]')?.dataset.acao;
+      if (!acao) return;
+      recado = null;
+      try {
+        if (acao === 'entrar-conta') await entrar();
+        if (acao === 'sair-conta') await sairDaConta();
+        if (acao === 'trocar-conta') await trocarDeConta();
+      } catch (erro) {
+        // fechar a janelinha do Google é desistência, não defeito: a tela explica
+        // e continua inteira, nunca vira tela de falha
+        recado = erro?.message ?? 'Não consegui falar com a conta agora.';
+      }
+      desenharConta();
+    });
+
+    const pararConta = aoMudarConta(desenharConta);
+    const pararNuvem = aoMudarNuvem(desenharConta);
+
+    tela.append(capa, busca, filtros, lista, contaCaixa, fecho);
+
+    // etiqueta editada aqui ou no outro celular redesenha o que está filtrado; com o
+    // índice inteiro na tela não há o que refazer, e redesenhar 64 linhas à toa
+    // faria a lista piscar embaixo do dedo de quem está rolando
+    const pararEtiquetas = aoMudarEtiquetas(() => {
+      if (filtroAtivo || campo.value.trim()) aplicarBusca();
+    });
 
     // ---------------------------------------------------------------- rodapé
     const rodape = document.createElement('div');
@@ -185,8 +317,36 @@ export default {
       lista.replaceChildren(...grupos.map(criarGrupo));
     }
 
-    function desenharBusca(termo) {
-      const achados = buscar(indice, termo);
+    /**
+     * Quem sobra depois da busca e do filtro.
+     *
+     * A ordem de `buscar` é ranking (nome que começa com o termo vem antes), então
+     * ela vem inteira na frente e o que a etiqueta acrescentou entra atrás — filtrar
+     * a lista original perderia esse ranking e embaralharia o resultado.
+     */
+    function receitasVisiveis(termo) {
+      const t = termo.trim();
+      let achados = indice;
+      if (t) {
+        achados = buscar(indice, t);
+        const vistos = new Set(achados.map((r) => r.id));
+        const alvo = semAcento(t);
+        // a etiqueta também é palavra de busca: "sobremesa" acha os doces mesmo
+        // sem a palavra estar no nome nem em nenhum ingrediente
+        for (const { id, nome } of ETIQUETAS) {
+          if (!semAcento(nome).includes(alvo)) continue;
+          for (const receita of indice) {
+            if (vistos.has(receita.id) || !etiquetasDe(receita).includes(id)) continue;
+            vistos.add(receita.id);
+            achados = achados.concat(receita);
+          }
+        }
+      }
+      if (!filtroAtivo) return achados;
+      return achados.filter((r) => etiquetasDe(r).includes(filtroAtivo));
+    }
+
+    function desenharAchados(achados, descricao, procurando) {
       lista.replaceChildren();
 
       if (!achados.length) {
@@ -194,18 +354,24 @@ export default {
         vazio.className = 'vazio indice-vazio';
         const titulo = document.createElement('p');
         titulo.className = 'vazio-titulo';
-        titulo.textContent = 'Nada com esse nome aqui em casa.';
+        titulo.textContent = procurando
+          ? 'Nada com esse nome aqui em casa.'
+          : 'Nenhuma receita com essa etiqueta ainda.';
         const texto = document.createElement('p');
         texto.className = 'indice-vazio-texto';
-        texto.textContent =
-          'Talvez a gente chame o prato de outro jeito. Tente pelo ingrediente — ' +
-          'bacalhau, pinhão, gorgonzola — que a busca acha a receita por dentro.';
+        texto.textContent = procurando
+          ? 'Talvez a gente chame o prato de outro jeito. Tente pelo ingrediente — ' +
+            'bacalhau, pinhão, gorgonzola — que a busca acha a receita por dentro.'
+          : 'As etiquetas se marcam dentro de cada receita, lá no pé da página. ' +
+            'Marque algumas e elas aparecem aqui.';
         const botao = document.createElement('button');
         botao.className = 'botao-vazado botao indice-vazio-botao';
         botao.type = 'button';
         botao.textContent = `Ver as ${indice.length} receitas`;
         botao.addEventListener('click', () => {
           campo.value = '';
+          filtroAtivo = null;
+          pintarFiltros();
           aplicarBusca();
           campo.focus();
         });
@@ -217,7 +383,7 @@ export default {
       const resumo = document.createElement('p');
       resumo.className = 'rotulo indice-resumo';
       resumo.textContent =
-        `${achados.length} ${achados.length === 1 ? 'receita' : 'receitas'} para “${termo.trim()}”`;
+        `${achados.length} ${achados.length === 1 ? 'receita' : 'receitas'} ${descricao}`;
       lista.append(resumo);
 
       const resultados = document.createElement('div');
@@ -230,12 +396,18 @@ export default {
       const termo = campo.value;
       const procurando = termo.trim().length > 0;
       limpar.hidden = !procurando;
-      if (procurando) {
-        fecharGaveta();
-        desenharBusca(termo);
-      } else {
+      if (procurando) fecharGaveta();
+
+      // sem busca e sem filtro, o índice inteiro — é o estado normal da tela
+      if (!procurando && !filtroAtivo) {
         desenharTudo();
+        return;
       }
+
+      const descricao = procurando
+        ? `para “${termo.trim()}”`
+        : `com a etiqueta ${nomeDaEtiqueta(filtroAtivo)}`;
+      desenharAchados(receitasVisiveis(termo), descricao, procurando);
     }
 
     // ------------------------------------------------------------ gaveta A–Z
@@ -311,6 +483,9 @@ export default {
 
     return () => {
       document.removeEventListener('keydown', aoTeclar);
+      pararConta();
+      pararNuvem();
+      pararEtiquetas();
       rodape.remove();
       veu.remove();
     };

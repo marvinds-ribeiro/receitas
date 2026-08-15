@@ -6,6 +6,7 @@ import { carregarReceita } from '../dados.js';
 import montarCabecalho from '../componentes/cabecalho.js';
 import montarIngredientes from '../componentes/ingredientes.js';
 import montarPassos from '../componentes/passos.js';
+import montarEtiquetas from '../componentes/etiquetas.js';
 import * as cozinha from '../cozinha.js';
 
 export default {
@@ -50,10 +51,16 @@ export default {
       },
     };
 
+    // As etiquetas moram na nuvem POR ID, e quem sabe o id com certeza é a rota — o
+    // objeto da receita é o valor de um mapa e pode não repetir a própria chave. Sem
+    // isto, a gravação ia para "etiquetas/undefined" e a leitura nunca achava nada.
+    const comId = receita.id ? receita : { ...receita, id };
+
     const limpezas = [
       montarCabecalho(artigo, receita, estado),
       montarIngredientes(artigo, receita, estado),
       montarPassos(artigo, receita, estado),
+      montarEtiquetas(artigo, comId),
     ];
 
     return () => {

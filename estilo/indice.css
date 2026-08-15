@@ -354,3 +354,119 @@
   border-color: var(--bordo);
   color: var(--bordo);
 }
+
+/* ------------------------------------------------- conta da casa (só editar)
+   Vizinha do "Sair" e pelo mesmo motivo: é ajuste de casa, não navegação de
+   cozinha. Fica acima dele porque entrar é construtivo e sair é destrutivo —
+   o polegar que desce encontra primeiro o que não estraga nada.
+   O fio pontilhado em cima separa das receitas sem cortar a página. */
+.indice-conta {
+  padding: var(--e5) var(--margem) 0;
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  border-top: 1px dashed var(--linha);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+  align-items: flex-start;
+}
+.indice-conta:empty {
+  border-top: 0;
+  padding: 0;
+}
+.indice-conta-email {
+  font-size: 16px;
+  color: var(--verde);
+  word-break: break-all;
+}
+.indice-conta-aviso {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--tinta-fraca);
+  text-wrap: pretty;
+}
+.indice-conta-botao {
+  width: 100%;
+  min-height: var(--alvo-toque);
+}
+
+/* -------------------------------------------------------- filtros de etiqueta
+   Uma fita rolável logo abaixo da busca: são quatro hoje, mas a fita aguenta
+   mais sem empurrar o índice para baixo. Uma ligada por vez. */
+.indice-filtros {
+  display: flex;
+  gap: var(--e2);
+  padding: 0 var(--margem) var(--e4);
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.indice-filtros::-webkit-scrollbar {
+  display: none;
+}
+.indice-filtro {
+  flex: none;
+  min-height: 40px;
+  padding: 0 var(--e4);
+  border: 1px solid var(--linha);
+  border-radius: 999px;
+  background: var(--papel);
+  color: var(--tinta-fraca);
+  font-family: var(--interface);
+  font-size: 15px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.indice-filtro[aria-pressed='true'] {
+  background: var(--verde);
+  border-color: var(--verde);
+  color: var(--papel);
+}
+
+/* ------------------------------------------------------- destaque do cardápio
+   O caminho para o menu da semana nasce na capa, acima de tudo: montar a semana
+   é coisa de sentar e planejar, não de cozinha com uma mão. A barra do polegar
+   continua com o A–Z e a lista de compras, que são de uso diário. */
+.indice-destaque {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  margin-top: var(--e5);
+  padding: var(--e3) var(--e4);
+  min-height: var(--alvo-toque);
+  border: 1px solid var(--papel);
+  border-radius: var(--raio);
+  background: rgba(253, 249, 240, 0.12);
+  color: var(--papel);
+  text-decoration: none;
+}
+.indice-destaque-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.indice-destaque-nome {
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.indice-destaque-sub {
+  font-family: var(--interface);
+  font-size: 13px;
+  line-height: 1.35;
+  opacity: 0.85;
+  text-wrap: pretty;
+}
+.indice-destaque-seta {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid currentColor;
+  border-top: 2px solid currentColor;
+  transform: rotate(45deg);
+}

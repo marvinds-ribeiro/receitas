@@ -147,3 +147,86 @@
   color: var(--verde);
   margin-bottom: var(--e2);
 }
+
+/* ================================================================= etiquetas
+   O que a casa acha da receita, no pé dela: quem cozinha não etiqueta, e quem
+   etiqueta já leu o prato inteiro. Quatro caixas independentes — nunca escolha
+   única —, cada uma com o alvo de toque cheio, porque marcar acontece com a
+   mão suja tanto quanto ler.
+   A marca segue o mesmo desenho da lista de compras: mesma casa, mesmo gesto. */
+.etiquetas {
+  padding: var(--e6) var(--margem) var(--e7);
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  border-top: 1px dashed var(--linha);
+}
+.etiquetas-titulo {
+  margin-bottom: var(--e4);
+}
+.etiquetas-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--e2);
+}
+.etiqueta-caixa {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  min-height: var(--alvo-toque);
+  padding: var(--e2) var(--e3) var(--e2) var(--e2);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  background: var(--papel);
+  color: var(--tinta);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.etiqueta-marca {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--linha-forte);
+  border-radius: 6px;
+  background: var(--papel-fundo);
+}
+.etiqueta-marca::after {
+  content: '';
+  width: 13px;
+  height: 7px;
+  border-left: 2.5px solid var(--papel);
+  border-bottom: 2.5px solid var(--papel);
+  transform: rotate(-45deg) translate(1px, -2px);
+  opacity: 0;
+}
+.etiqueta-caixa[aria-pressed='true'] {
+  border-color: var(--verde);
+}
+.etiqueta-caixa[aria-pressed='true'] .etiqueta-marca {
+  background: var(--verde);
+  border-color: var(--verde);
+}
+.etiqueta-caixa[aria-pressed='true'] .etiqueta-marca::after {
+  opacity: 1;
+}
+.etiqueta-nome {
+  font-family: var(--corpo);
+  font-size: 17px;
+  line-height: 1.25;
+}
+/* Desabilitada não é apagada: sem conta a etiqueta ainda é informação para LER,
+   e o motivo de não dar para mexer vem escrito logo abaixo. */
+.etiqueta-caixa:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+.etiquetas-aviso {
+  margin-top: var(--e3);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--tinta-fraca);
+  text-wrap: pretty;
+}

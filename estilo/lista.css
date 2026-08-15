@@ -1141,3 +1141,32 @@
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
+
+/* ------------------------------------------------------- lista trancada
+   Com conta e sem rede a lista fica de leitura. O aviso mora colado no topo,
+   acima da fita de progresso: quem tenta riscar precisa achar o motivo no
+   mesmo olhar. Ele pisca de leve no segundo toque, para o aviso já visível
+   dar sinal de vida em vez de parecer decoração. */
+.lista-aviso-nuvem {
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  padding: var(--e3) var(--margem);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--tinta-fraca);
+  border-bottom: 1px dashed var(--linha);
+  text-wrap: pretty;
+}
+@keyframes lista-aviso-pisca {
+  0% { background: transparent; }
+  25% { background: rgba(123, 46, 46, 0.1); }
+  100% { background: transparent; }
+}
+.lista-aviso-piscou {
+  animation: lista-aviso-pisca 900ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lista-aviso-piscou {
+    animation: none;
+  }
+}

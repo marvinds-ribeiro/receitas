@@ -14,6 +14,7 @@ const TELAS = {
   indice: () => import('./telas/indice.js'),
   receita: () => import('./telas/receita.js'),
   lista: () => import('./telas/lista.js'),
+  semana: () => import('./telas/semana.js'),
 };
 
 /** '#/receita/carbonara' → { tela: 'receita', params: ['carbonara'] } */

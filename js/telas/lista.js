@@ -40,9 +40,7 @@
 
 import { carregarIndice, carregarReceitas, buscar, porLetra, semAcento } from '../dados.js';
 import { agregar } from '../compras.js';
-
-const CHAVE_ESCOLHAS = 'receitas.lista';
-const CHAVE_MARCADOS = 'receitas.lista.marcados';
+import * as guardada from '../lista-guardada.js';
 
 const MIN_PORCOES = 1;
 const MAX_PORCOES = 60;
@@ -236,38 +234,9 @@ function partirMedida(texto) {
   return { numero, unidade, semNumero: false, aproximado };
 }
 
-/** Escolhas guardadas: mapa id → porções. Sobrevive a fechar e reabrir o app. */
-function lerEscolhas() {
-  try {
-    const cru = JSON.parse(localStorage.getItem(CHAVE_ESCOLHAS) || '{}');
-    if (!cru || typeof cru !== 'object' || Array.isArray(cru)) return {};
-    const limpo = {};
-    for (const [id, porcoes] of Object.entries(cru)) {
-      const n = Math.round(Number(porcoes));
-      if (Number.isFinite(n) && n >= MIN_PORCOES) limpo[id] = Math.min(n, MAX_PORCOES);
-    }
-    return limpo;
-  } catch {
-    return {};
-  }
-}
-
-function lerMarcados() {
-  try {
-    const cru = JSON.parse(localStorage.getItem(CHAVE_MARCADOS) || '[]');
-    return new Set(Array.isArray(cru) ? cru.map(String) : []);
-  } catch {
-    return new Set();
-  }
-}
-
-function guardar(chave, valor) {
-  try {
-    localStorage.setItem(chave, JSON.stringify(valor));
-  } catch {
-    // cota cheia ou armazenamento bloqueado: a tela continua funcionando na sessão
-  }
-}
+// Onde a lista mora, e se dá para mexer nela, é assunto de lista-guardada.js: aqui só
+// se pede e se manda guardar. A tela não sabe se aquilo foi para o aparelho ou para a
+// nuvem — e é assim que ela continua sendo a mesma tela nos três modos.
 
 /**
  * Chave estável de uma linha agregada. `norm` não basta: o mesmo item pode ter
@@ -348,10 +317,10 @@ export default {
     let limparDitado = null;
 
     const porId = new Map(indice.map((r) => [r.id, r]));
-    let escolhas = lerEscolhas();
+    let escolhas = { ...guardada.escolhas() };
     // receita que sumiu do índice não pode segurar a lista
     for (const id of Object.keys(escolhas)) if (!porId.has(id)) delete escolhas[id];
-    let marcados = lerMarcados();
+    let marcados = new Set(guardada.marcados());
     let grupos = [];
     // no mercado o que interessa é o que falta: o que já foi pego começa recolhido
     let feitosAbertos = false;
@@ -374,6 +343,8 @@ export default {
         <h1 class="lista-titulo">Lista de compras</h1>
         <p class="lista-faixa-conta rotulo"></p>
       </header>
+
+      <p class="lista-aviso-nuvem" hidden></p>
 
       <div class="lista-fita" hidden>
         <div class="lista-fita-linha">
@@ -435,6 +406,7 @@ export default {
       </div>`;
 
     const faixaConta = comprar.querySelector('.lista-faixa-conta');
+    const avisoNuvem = comprar.querySelector('.lista-aviso-nuvem');
     const fita = comprar.querySelector('.lista-fita');
     const fitaConta = comprar.querySelector('.lista-fita-conta');
     const trilhoCheio = comprar.querySelector('.lista-trilho-cheio');
@@ -569,6 +541,24 @@ export default {
       }
       secao.append(ul);
       caixaEscolhas.append(secao);
+    }
+
+    // --------------------------------------------------------- lista trancada
+    // Sem rede (com conta), a lista fica de leitura. O aviso mora colado no topo,
+    // acima da fita: quem tenta riscar um item precisa achar o motivo no mesmo
+    // olhar, não descobrir sozinho que a marca não pegou.
+    function pintarAvisoDaNuvem() {
+      const dizer = guardada.recado();
+      avisoNuvem.textContent = dizer ?? '';
+      avisoNuvem.hidden = !dizer;
+    }
+
+    function avisarTrancada() {
+      pintarAvisoDaNuvem();
+      avisoNuvem.classList.remove('lista-aviso-piscou');
+      // reinicia a animação para o aviso já visível dar sinal de vida no segundo toque
+      void avisoNuvem.offsetWidth;
+      avisoNuvem.classList.add('lista-aviso-piscou');
     }
 
     // ------------------------------------------------------------- estado vazio
@@ -887,12 +877,13 @@ export default {
     function alternarItem(norm) {
       const grupo = grupos.find((g) => g.norm === norm);
       if (!grupo) return;
+      if (!guardada.podeMarcar()) return avisarTrancada();
       const marcado = !estaMarcado(grupo);
       for (const c of grupo.chaves) {
         if (marcado) marcados.add(c);
         else marcados.delete(c);
       }
-      guardar(CHAVE_MARCADOS, [...marcados]);
+      guardada.definirMarcados([...marcados]).catch(avisarTrancada);
       for (const li of comprar.querySelectorAll(`.lista-item[data-norm="${CSS.escape(norm)}"]`)) {
         li.classList.toggle('lista-item-marcado', marcado);
         li.querySelector('.lista-item-alvo')?.setAttribute('aria-pressed', marcado ? 'true' : 'false');
@@ -944,6 +935,7 @@ export default {
     }
 
     function mudarPorcoes(id, passo) {
+      if (!guardada.podeMexer()) return avisarTrancada();
       const atual = escolhas[id];
       if (atual == null) return;
       const proximo = atual + passo;
@@ -1002,7 +994,8 @@ export default {
       const podadas = new Set([...marcados].filter((c) => validas.has(c)));
       if (podadas.size !== marcados.size) {
         marcados = podadas;
-        guardar(CHAVE_MARCADOS, [...marcados]);
+        // podar é faxina, não edição: sem poder gravar, ela fica só nesta sessão
+        guardada.definirMarcados([...marcados]).catch(() => {});
       }
 
       faixaConta.textContent = `${emReceitas(ids.length)} · ${emItens(grupos.length)}`;
@@ -1056,7 +1049,7 @@ export default {
     }
 
     function salvarEscolhas() {
-      guardar(CHAVE_ESCOLHAS, escolhas);
+      guardada.definirEscolhas(escolhas).catch(avisarTrancada);
       pintarBarra();
       desenharComprar();
     }
@@ -1111,8 +1104,9 @@ export default {
         desenharItens();
       }
       if (acao === 'desmarcar') {
+        if (!guardada.podeMarcar()) return avisarTrancada();
         marcados = new Set();
-        guardar(CHAVE_MARCADOS, []);
+        guardada.definirMarcados([]).catch(avisarTrancada);
         feitosAbertos = false;
         desenharItens();
       }
@@ -1135,6 +1129,10 @@ export default {
       }
 
       if (evento.target.closest('.lista-escolha-alvo')) {
+        if (!guardada.podeMexer()) {
+          fecharEscolher();
+          return avisarTrancada();
+        }
         if (escolhas[id] != null) {
           delete escolhas[id];
           if (idNaGaveta === id) idNaGaveta = null;
@@ -1199,6 +1197,7 @@ export default {
     // ação que joga fora trabalho e não tem volta.
     let confirmando = null;
     function pedirLimpeza() {
+      if (!guardada.podeMexer()) return avisarTrancada();
       if (!confirmando) {
         botaoLimpar.textContent = 'Tocar de novo para apagar tudo';
         botaoLimpar.classList.add('lista-limpar-armado');
@@ -1210,8 +1209,7 @@ export default {
       marcados = new Set();
       idNaGaveta = null;
       normAberto = null;
-      guardar(CHAVE_ESCOLHAS, {});
-      guardar(CHAVE_MARCADOS, []);
+      guardada.limparTudo().catch(avisarTrancada);
       for (const id of linhasEscolha.keys()) pintarEscolha(id);
       pintarBarra();
       pintarGaveta();
@@ -1231,8 +1229,49 @@ export default {
     pintarBarra();
     pintarGaveta();
     desenharComprar();
+    pintarAvisoDaNuvem();
+
+    /** Só o que a tela ainda não está mostrando — para comparar antes de redesenhar. */
+    function daGaveta() {
+      const limpas = { ...guardada.escolhas() };
+      for (const id of Object.keys(limpas)) if (!porId.has(id)) delete limpas[id];
+      return { escolhas: limpas, marcados: [...guardada.marcados()].sort() };
+    }
+
+    const iguais = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+    /**
+     * Mudou na gaveta (o outro celular riscou, a conta entrou, a migração subiu):
+     * redesenha.
+     *
+     * Mas NÃO no eco da própria gravação. Marcar um item não pode mover nada — é regra
+     * desta tela desde a 1.0 —, e redesenhar aqui destruía os botões debaixo do dedo:
+     * três toques seguidos viravam um só, porque do segundo em diante o alvo já era um
+     * nó descartado. Se o que chegou é o que já está na tela, não há o que fazer.
+     */
+    const pararGuardada = guardada.aoMudar(() => {
+      const chegou = daGaveta();
+      if (iguais(chegou, { escolhas, marcados: [...marcados].sort() })) {
+        pintarAvisoDaNuvem();
+        return;
+      }
+      escolhas = chegou.escolhas;
+      marcados = new Set(chegou.marcados);
+      for (const id of linhasEscolha.keys()) pintarEscolha(id);
+      pintarBarra();
+      pintarGaveta();
+      desenharComprar();
+      pintarAvisoDaNuvem();
+      guardada.migrarSePreciso().catch(() => {});
+    });
+
+    // DEPOIS de assinar, nunca antes: a subida da migração avisa os ouvintes dentro da
+    // própria gravação, e uma tela que ainda não se inscreveu perde justamente o aviso
+    // que traria a lista recém-migrada para dentro dela.
+    guardada.migrarSePreciso().catch(() => {});
 
     return () => {
+      pararGuardada();
       clearTimeout(confirmando);
       clearTimeout(relogioRolagem);
       window.removeEventListener('scroll', aoRolar);
