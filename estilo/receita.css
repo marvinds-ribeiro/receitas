@@ -231,3 +231,21 @@
   line-height: 1.5;
   color: var(--tinta-fraca);
 }
+
+/* a fonte da receita: uma linha de rodapé, no mesmo tom de rótulo das etiquetas —
+   quem cozinha não precisa dela, quem quer conferir a origem a acha no fim. */
+.receita-fonte {
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  padding: var(--e4) var(--margem) var(--e7);
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+.receita-fonte a {
+  display: inline-block;
+  min-height: var(--alvo-toque);
+  line-height: var(--alvo-toque);
+  color: var(--tinta-fraca);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

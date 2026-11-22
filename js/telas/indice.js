@@ -285,6 +285,8 @@ export default {
       </div>
       <nav class="indice-barra" aria-label="Navegação do índice">
         <div class="indice-barra-interna">
+          <a class="botao indice-barra-incluir" href="#/incluir"
+             aria-label="Adicionar receita"><span class="indice-mais" aria-hidden="true"></span></a>
           <button class="botao indice-barra-letras" type="button"
                   aria-expanded="false" aria-label="Ir para uma letra">A–Z</button>
           <a class="botao botao-bordo indice-barra-lista" href="#/lista">Lista de compras</a>

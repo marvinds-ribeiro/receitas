@@ -9,6 +9,33 @@ import montarPassos from '../componentes/passos.js';
 import montarEtiquetas from '../componentes/etiquetas.js';
 import * as cozinha from '../cozinha.js';
 
+/**
+ * A linha "Fonte" no pé da receita, depois das etiquetas. Só vira link se a URL for
+ * http(s): o endereço vem de arquivo editável, e um `javascript:` virando href seria
+ * código rodando no app. Sem fonte, ou com URL que não presta, não desenha nada.
+ */
+function montarFonte(artigo, fonte) {
+  if (!fonte || typeof fonte.url !== 'string') return;
+  let url;
+  try {
+    url = new URL(fonte.url);
+  } catch {
+    return;
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+
+  const linha = document.createElement('p');
+  linha.className = 'receita-fonte rotulo';
+  linha.append('Fonte: ');
+  const link = document.createElement('a');
+  link.href = url.href;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.textContent = fonte.titulo || url.host;
+  linha.append(link);
+  artigo.append(linha);
+}
+
 export default {
   titulo: 'Receita',
 
@@ -62,6 +89,8 @@ export default {
       montarPassos(artigo, receita, estado),
       montarEtiquetas(artigo, comId),
     ];
+
+    montarFonte(artigo, receita.fonte);
 
     return () => {
       limpezas.forEach((f) => {

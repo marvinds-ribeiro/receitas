@@ -237,12 +237,40 @@
   padding-inline: var(--e3);
 }
 .indice-barra .indice-barra-letras {
-  flex: 0 0 108px;
   letter-spacing: 0.18em;
 }
-.indice-barra-lista {
-  flex: 1;
+/* "+" e A–Z dividem a mesma largura e encolhem juntos; a lista de compras fica com o
+   que o texto pede (nunca quebra) e os dois cedem o resto em telas estreitas. */
+.indice-barra .indice-barra-incluir,
+.indice-barra .indice-barra-letras {
+  flex: 0 1 108px;
+  min-width: 56px;
 }
+.indice-barra .indice-barra-lista {
+  flex: 1 0 auto;
+  white-space: nowrap;
+}
+@media (max-width: 449px) {
+  .indice-barra .indice-barra-lista {
+    letter-spacing: 0.05em;
+    padding-inline: 10px;
+  }
+}
+.indice-mais {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+.indice-mais::before,
+.indice-mais::after {
+  content: '';
+  position: absolute;
+  background: currentColor;
+  border-radius: 1px;
+}
+.indice-mais::before { left: 0; right: 0; top: 50%; height: 2.5px; transform: translateY(-50%); }
+.indice-mais::after { top: 0; bottom: 0; left: 50%; width: 2.5px; transform: translateX(-50%); }
 
 /* ------------------------------------------------------------ gaveta de letras */
 .indice-veu {

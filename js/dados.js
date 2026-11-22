@@ -74,6 +74,17 @@ export async function carregarReceitas() {
   return cacheReceitas;
 }
 
+/**
+ * Esquece o que está em memória e busca o índice de novo. Para a receita que acabou de
+ * entrar pelo app aparecer sem fechar e abrir: quem chama confere se ela veio, porque o
+ * service worker devolve a cópia velha quando a rede demora.
+ */
+export async function recarregar() {
+  cacheIndice = null;
+  cacheReceitas = null;
+  return carregarIndice();
+}
+
 export async function carregarReceita(id) {
   const todas = await carregarReceitas();
   return todas[id] ?? null;

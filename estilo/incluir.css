@@ -1,0 +1,653 @@
+/* ========================================================== nova receita
+
+   Uma coluna só, de cima para baixo na ordem do gesto: de onde vem, a caixa,
+   criar, e a fila embaixo. A caixa é grande de propósito — quem dita uma
+   receita inteira precisa ver o que o teclado entendeu sem rolar dentro dela.
+
+   A folha do pedido que falhou sobe do rodapé, onde o polegar já está. */
+
+.incluir {
+  padding-bottom: var(--e8);
+}
+
+/* mesmo cabeçalho do cardápio: a saída na primeira linha, o nome embaixo */
+.incluir-faixa {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--e2) var(--e3);
+  padding: var(--e3) var(--margem) var(--e4);
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  border-bottom: 1px solid var(--linha);
+}
+.incluir-titulo {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  font-size: 25px;
+  color: var(--verde);
+  text-align: center;
+}
+.incluir-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  min-height: var(--alvo-toque);
+  padding-right: var(--e2);
+  color: var(--verde-claro);
+  font-family: var(--interface);
+  font-size: 15px;
+}
+.incluir-voltar-seta {
+  width: 9px;
+  height: 9px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.incluir-revisao-recado {
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  font-size: 16px;
+  line-height: 1.6;
+  text-wrap: pretty;
+  /* mostra o erro.mensagem do pedido que falhou, que pode ter várias linhas */
+  white-space: pre-line;
+}
+
+/* --------------------------------------------------------------- pedir */
+.incluir-pedir,
+.incluir-fila {
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  padding: var(--e5) var(--margem) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+}
+
+.incluir-abas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--e2);
+}
+.incluir-aba {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--alvo-toque);
+  padding: var(--e1) var(--e2);
+  border: 1.5px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: transparent;
+  color: var(--verde);
+  font-family: var(--interface);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.incluir-aba[aria-selected='true'] {
+  background: var(--verde);
+  border-color: var(--verde);
+  color: var(--papel);
+}
+/* desabilitada mas legível: "em breve" é promessa, não erro */
+.incluir-aba:disabled {
+  cursor: default;
+  border-style: dashed;
+  color: var(--tinta-fraca);
+}
+.incluir-aba-breve {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.incluir-texto {
+  width: 100%;
+  min-height: 14rem;
+  padding: var(--e3);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--papel);
+  color: var(--verde);
+  font-family: var(--corpo);
+  font-size: 17px;
+  line-height: 1.55;
+  resize: vertical;
+}
+.incluir-texto::placeholder {
+  color: var(--tinta-fraca);
+}
+
+.incluir-dica,
+.incluir-contagem {
+  font-family: var(--interface);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--tinta-fraca);
+}
+.incluir-contagem {
+  margin-top: calc(-1 * var(--e2));
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.incluir-contagem-alerta {
+  color: var(--bordo);
+  font-weight: 600;
+  text-align: left;
+}
+
+/* o bloqueio é um cartão: é a primeira coisa que quem está sem conta precisa ler */
+.incluir-bloqueio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+  padding: var(--e4);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  background: var(--papel);
+}
+.incluir-bloqueio[hidden],
+.incluir-recado[hidden],
+.incluir-ajudante[hidden],
+.incluir-fila[hidden] {
+  display: none;
+}
+.incluir-bloqueio-texto,
+.incluir-recado {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--tinta-fraca);
+  text-wrap: pretty;
+}
+.incluir-recado {
+  color: var(--bordo);
+}
+
+.incluir-criar {
+  width: 100%;
+}
+.incluir-criar:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* o sinal de vida do computador de casa: um ponto verde, ou um aro vazio */
+.incluir-ajudante {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e2);
+  font-family: var(--interface);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--tinta-fraca);
+}
+.incluir-ajudante::before {
+  content: '';
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-top: 0.3em;
+  border-radius: 50%;
+  border: 2px solid var(--linha-forte);
+}
+.incluir-ajudante[data-ouvindo='true'] {
+  color: var(--verde);
+}
+.incluir-ajudante[data-ouvindo='true']::before {
+  background: var(--verde);
+  border-color: var(--verde);
+}
+
+/* -------------------------------------------------------------- a fila */
+.incluir-fila {
+  padding-top: var(--e6);
+}
+.incluir-fila-titulo {
+  font-size: 24px;
+  color: var(--verde);
+  padding-bottom: var(--e1);
+  border-bottom: 1px dashed var(--linha);
+}
+.incluir-pedidos {
+  display: flex;
+  flex-direction: column;
+}
+.incluir-pedido {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  min-height: 60px;
+  padding: var(--e2) 0;
+  border-bottom: 1px solid var(--linha);
+  color: var(--verde);
+  text-align: left;
+}
+.incluir-pedido-toque {
+  cursor: pointer;
+}
+.incluir-pedido-toque:active {
+  background: var(--toque);
+}
+.incluir-pedido-titulo {
+  font-family: var(--corpo);
+  font-size: 18px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.incluir-pedido[data-estado='falhou'] .incluir-pedido-estado {
+  color: var(--bordo);
+}
+.incluir-pedido[data-estado='rascunho'] .incluir-pedido-estado {
+  color: var(--verde);
+}
+
+/* ------------------------------------------------------------- a folha */
+.incluir-folha {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  background: color-mix(in srgb, var(--verde) 40%, transparent);
+}
+.incluir-folha-painel {
+  width: 100%;
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  padding: var(--e5) var(--margem) calc(var(--e5) + env(safe-area-inset-bottom));
+  border-radius: var(--raio) var(--raio) 0 0;
+  background: var(--papel-fundo);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+}
+.incluir-folha-titulo {
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.incluir-folha-erro {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--bordo);
+  text-wrap: pretty;
+  white-space: pre-line;
+}
+.incluir-folha-saidas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+}
+.incluir-folha-botao {
+  width: 100%;
+}
+
+/* ========================================================== a revisão
+
+   O rascunho inteiro, editável, numa coluna só e na ordem da receita: de onde
+   veio, o que a IA avisou, a receita, os ingredientes, o modo de fazer e as
+   duas saídas. Cada controle tem o alvo de toque cheio — a revisão é feita
+   com o polegar, muitas vezes de pé na cozinha.
+
+   O ingrediente ocupa linhas empilhadas (medida, nome, observação) porque em
+   390 px não cabe lado a lado sem encolher o nome; os três campos técnicos
+   ficam recolhidos em "Detalhes", ao lado das setas de ordem. */
+
+.revisao {
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+  padding: var(--e5) var(--margem) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e4);
+}
+.revisao [hidden] {
+  display: none;
+}
+
+.revisao-topo:empty {
+  display: none;
+}
+.revisao-fonte {
+  overflow-wrap: anywhere;
+}
+.revisao-fonte a {
+  color: var(--verde-claro);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* os avisos da IA: o que ela deduziu ou não achou, para conferir primeiro */
+.revisao-avisos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+  padding: var(--e3) var(--e4);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  background: var(--papel);
+}
+.revisao-aviso {
+  display: flex;
+  gap: var(--e2);
+  font-family: var(--interface);
+  font-size: 15px;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+.revisao-aviso::before {
+  content: '!';
+  flex: none;
+  font-weight: 700;
+  color: var(--bordo);
+}
+
+.revisao-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e4);
+}
+
+/* ---------------------------------------------------------- os campos */
+.revisao-receita {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+}
+.revisao-linha {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--e3);
+}
+.revisao-campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
+  min-width: 0;
+}
+
+.revisao input,
+.revisao select,
+.revisao textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--alvo-toque);
+  padding: var(--e2) var(--e3);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--papel);
+  color: var(--verde);
+  font-family: var(--corpo);
+  font-size: 17px;
+  line-height: 1.4;
+}
+.revisao textarea {
+  resize: vertical;
+}
+.revisao input::placeholder,
+.revisao textarea::placeholder {
+  color: var(--tinta-fraca);
+}
+.revisao select {
+  font-family: var(--interface);
+  font-size: 16px;
+}
+.revisao [aria-invalid='true'] {
+  border: 2px solid var(--bordo);
+}
+.revisao :disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* o filtro do .emoji dessaturaria também o fundo do campo, que ficaria cinza */
+.revisao .revisao-emoji {
+  filter: none;
+  width: 4.5rem;
+  text-align: center;
+  font-size: 22px;
+}
+.revisao .revisao-detalhes .revisao-emoji {
+  width: 100%;
+  text-align: left;
+}
+
+.revisao-porcoes,
+.revisao-tempo {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+}
+.revisao .revisao-porcoes input,
+.revisao .revisao-tempo input {
+  width: 4rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.revisao-tempo-min {
+  font-family: var(--interface);
+  font-size: 15px;
+  color: var(--tinta-fraca);
+}
+
+/* −, +, ↑, ↓ e ✕: quadrados de 48 px, fio fino, sem cor própria */
+.revisao-porcao-botao,
+.revisao-mover-botao {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  border: 1.5px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: transparent;
+  color: var(--verde);
+  font-family: var(--interface);
+  font-size: 20px;
+  line-height: 1;
+}
+.revisao-porcao-botao:active,
+.revisao-mover-botao:active {
+  background: var(--toque);
+}
+.revisao-mover {
+  display: flex;
+  gap: var(--e1);
+}
+
+/* ------------------------------------------------ ingredientes e passos */
+.revisao-secao {
+  font-size: 24px;
+  color: var(--verde);
+  padding-top: var(--e3);
+  padding-bottom: var(--e1);
+  border-bottom: 1px dashed var(--linha);
+}
+
+.revisao-grupos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e5);
+}
+.revisao-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+}
+.revisao-grupo-topo {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--e2);
+  align-items: center;
+}
+.revisao-itens {
+  display: flex;
+  flex-direction: column;
+}
+
+.revisao-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--e2);
+  padding: var(--e3) 0;
+  border-bottom: 1px solid var(--linha);
+}
+.revisao-item > * {
+  grid-column: 1 / -1;
+}
+/* fechado, "Detalhes" divide a última linha com as setas; aberto, ganha a largura */
+.revisao-item > .revisao-detalhes {
+  grid-column: 1;
+}
+.revisao-item > .revisao-detalhes[open] {
+  grid-column: 1 / -1;
+}
+.revisao-item > .revisao-mover {
+  grid-column: 2;
+  justify-self: end;
+}
+.revisao-item-medida {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.7fr;
+  gap: var(--e2);
+}
+
+.revisao-detalhes {
+  min-width: 0;
+}
+.revisao-detalhes-titulo {
+  display: flex;
+  align-items: center;
+  min-height: var(--alvo-toque);
+  font-family: var(--interface);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--verde-claro);
+  cursor: pointer;
+  list-style: none;
+  gap: var(--e2);
+}
+.revisao-detalhes-titulo::-webkit-details-marker {
+  display: none;
+}
+/* a mesma seta do "voltar", deitada: aponta para baixo fechado, para cima aberto */
+.revisao-detalhes-titulo::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-top: -3px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+.revisao-detalhes[open] > .revisao-detalhes-titulo::after {
+  margin-top: 3px;
+  transform: rotate(-135deg);
+}
+.revisao-detalhes[open] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+  padding-bottom: var(--e2);
+}
+
+.revisao-passos {
+  display: flex;
+  flex-direction: column;
+}
+.revisao-passo {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: var(--e2);
+  padding: var(--e3) 0;
+  border-bottom: 1px solid var(--linha);
+}
+.revisao-passo-numero {
+  padding-top: var(--e3);
+  font-family: var(--display);
+  font-variation-settings: var(--display-eixos);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--bordo);
+  text-align: center;
+}
+.revisao-passo > .revisao-mover,
+.revisao-passo > .revisao-erro {
+  grid-column: 2;
+}
+.revisao-passo > .revisao-mover {
+  justify-self: end;
+}
+
+.revisao-mais {
+  align-self: flex-start;
+}
+
+/* ------------------------------------------------------ o fim da tela */
+.revisao-erro {
+  font-family: var(--interface);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--bordo);
+  text-wrap: pretty;
+}
+.revisao-geral {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+}
+.revisao-geral:empty {
+  display: none;
+}
+.revisao-recusa {
+  font-family: var(--corpo);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  /* o erro do pedido pode ter várias linhas (uma por problema): cada uma na sua */
+  white-space: pre-line;
+}
+
+.revisao-estado {
+  font-family: var(--interface);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--verde);
+}
+/* embaixo do "Salvando…": o que o computador de casa espera, mais discreto que o estado */
+.revisao-espera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
+}
+.revisao-espera-linha {
+  font-family: var(--corpo);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--tinta-fraca);
+  text-wrap: pretty;
+}
+.revisao-abrir {
+  width: 100%;
+}
+
+.revisao-acoes {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: var(--e3);
+  padding-top: var(--e2);
+}
